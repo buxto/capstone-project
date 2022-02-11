@@ -225,11 +225,6 @@ submenu_4 = [
 
 sidebar = html.Div(
     [
-        html.H2("Sidebar", className="display-4"),
-        html.Hr(),
-        html.P(
-            "A sidebar with collapsable navigation links", className="lead"
-        ),
         dbc.Nav(submenu_1 + submenu_2 + submenu_3 + submenu_4, vertical=True),
     ],
     style=SIDEBAR_STYLE,
@@ -310,7 +305,7 @@ def render_page_content(pathname):
                     html.Td(
                         dcc.Graph(
                             id="f4 id",
-                            figure=createFig('rtstock', 'MA', 'Mastercard ')
+                            figure=createFig('rtstock', 'MA', 'Mastercard')
                         )
                     )
                 ],
