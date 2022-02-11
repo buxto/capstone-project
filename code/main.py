@@ -7,6 +7,7 @@ import pandas as pd
 import pymssql
 from joblib import dump, load
 from plotly.subplots import make_subplots
+import plotly.graph_objs as go
 import plotly
 import matplotlib.pyplot as plt
 import joblib
@@ -22,6 +23,8 @@ password = "K-qC4SoI_oUvepg"
 server = "gen10-data-fundamentals-21-11-sql-server.database.windows.net"
 
 conn = pymssql.connect(server, username, password, database)
+
+
 # table = "dbo.hstock"
 
 
@@ -40,17 +43,23 @@ def createFig(table, ticker, title):
     df = getData(table)
     df2 = df[df["Ticker"] == ticker]
     df2.sort_values(by=['Time'], inplace=True)
-    fig = px.line(df2, x="Time", y="Current Price", title=f"{title} ({ticker})"
-                  # labels={
-                  #     "Timestamp": "Need to convert from timestamp to time",
-                  #     "Open Price": "Current Price ($)"
-                  #     },
-                  )
+    fig = px.line(df2, x="Time", y="Current Price", title=f"{title} ({ticker})")
     return fig
 
 
-def createFigML():
+# def createTestFig():
+#
+#     fig = go.Figure(go.Indicator(
+#         mode="gauge+number",
+#         value=45,
+#         title={'text': "Speed"},
+#         domain={'x': [0, 1], 'y': [0, 1]}
+#     ))
+#
+#     return fig
 
+
+def createFigArima():
     server = "gen10-data-fundamentals-21-11-sql-server.database.windows.net"
     table = "dbo.hstock"
     try:
@@ -62,6 +71,48 @@ def createFigML():
     cursor = conn1.cursor()
     query = f"SELECT * FROM {table}"
     hst_df = pd.read_sql(query, conn1)
+
+    apple_df = hst_df[hst_df['Ticker'] == 'AAPL']
+    apple_df = apple_df.drop(columns='Ticker')
+    apple_df['Date'] = pd.to_datetime(apple_df['Date'], format='%Y-%m-%d')
+    apple_df.reset_index(drop=True, inplace=True)
+
+    m_df = apple_df.drop(columns=['Date', 'Open', 'Close', 'Low', 'Volume'])
+
+    try:
+        arima_mdl = load(r'arima.model')
+    except Exception as e:
+        print(e)
+
+    new_dates = [m_df.index[-1] + x for x in range(1, 11)]
+    df_pred = pd.DataFrame(index=new_dates, columns=m_df.columns)
+    ar_df = pd.concat([m_df, df_pred])
+    ar_df['predictions'] = arima_mdl.predict(start=m_df.shape[0], end=ar_df.shape[0])
+
+    # Plotting
+    sub_fig = make_subplots(specs=[[{"secondary_y": False}]])
+
+    # fig = px.line(ar_df, y='High', markers=True)
+    fig1 = px.line(ar_df, y='High', markers=True)
+    fig2 = px.line(ar_df, y='predictions', markers=True, color_discrete_sequence=px.colors.qualitative.Light24)
+    sub_fig.add_traces(fig1.data + fig2.data)
+
+    return sub_fig
+
+
+def createFigAutoReg():
+    server = "gen10-data-fundamentals-21-11-sql-server.database.windows.net"
+    table = "dbo.hstock"
+    try:
+        # print(f"server {server}, username {username}, password {password}, database {database}")
+        conn1 = pymssql.connect(server, username, password, database)
+    except Exception as e:
+        print(e)
+
+    cursor = conn1.cursor()
+    query = f"SELECT * FROM {table}"
+    hst_df = pd.read_sql(query, conn1)
+
     apple_df = hst_df[hst_df['Ticker'] == 'AAPL']
     apple_df = apple_df.drop(columns='Ticker')
     apple_df['Date'] = pd.to_datetime(apple_df['Date'], format='%Y-%m-%d')
@@ -74,7 +125,6 @@ def createFigML():
     except Exception as e:
         print(e)
 
-
     new_dates = [m_df.index[-1] + x for x in range(1, 11)]
     df_pred = pd.DataFrame(index=new_dates, columns=m_df.columns)
 
@@ -82,8 +132,8 @@ def createFigML():
 
     # start at the end of original data, go til the end of this new dataframe
     ar_df['predictions'] = res2.predict(start=m_df.shape[0], end=ar_df.shape[0])
-    # fig = ar_df[['High', 'predictions']].plot(marker='o')
 
+    # Plotting
     sub_fig = make_subplots(specs=[[{"secondary_y": False}]])
 
     # fig = px.line(ar_df, y='High', markers=True)
@@ -92,6 +142,8 @@ def createFigML():
     sub_fig.add_traces(fig1.data + fig2.data)
 
     return sub_fig
+
+
 # -----------------------------------------------------------------------
 
 
@@ -109,16 +161,15 @@ SIDEBAR_STYLE = {
     "bottom": 0,
     "width": "16rem",
     "padding": "2rem 1rem",
-    "background-color": "#f8f9fa",
+    "backgroundColor": "#f8f9fa",
 }
 # The styles for the main contnet position it to the rigth of the sidebar and add some padding
 CONTENT_STYLE = {
-    "margin-left": "18rem",
-    "margin-right": "2rem",
+    "marginLeft": "18rem",
+    "marginRight": "2rem",
     "padding": "2rem 1rem",
-    "overflow-x": "scroll"
+    "overflowX": "scroll"
 }
-
 
 submenu_1 = [
     html.Li(
@@ -198,7 +249,6 @@ submenu_3 = [
     ),
 ]
 
-
 submenu_4 = [
     html.Li(
         dbc.Row(
@@ -233,8 +283,7 @@ sidebar = html.Div(
 
 content = html.Div(id="page-content", style=CONTENT_STYLE)
 
-app.layout = html.Div([dcc.Location(id="url"), sidebar, content])
-
+app.layout = html.Div([dcc.Location(id="url"), sidebar, content, html.Meta(httpEquiv="refresh", content="60")])
 
 # this function is used to toggle the is_open property of each Collapse
 def toggle_collapse(n, is_open):
@@ -267,32 +316,35 @@ for i in range(1,5):
 def update_finance(n):
     return [
         html.H1(children='Finance', style={"text-align": "center"}),
-        html.Table(children=[
-            html.Tr(children=[
-                html.Td(
-                    dcc.Graph(
-                        figure=createFig('rtstock', 'V', 'VISA')
+        html.Table(
+            children=[
+                html.Tr(children=[
+                    html.Td(
+                        dcc.Graph(
+                            figure=createFig('rtstock', 'V', 'VISA')
+                        ),
                     ),
-                ),
-                html.Td(
-                    dcc.Graph(
-                        figure=createFig('rtstock', 'JPM', 'JPMorgan Chase')
+                    html.Td(
+                        dcc.Graph(
+                            figure=createFig('rtstock', 'JPM', 'JPMorgan Chase')
+                        )
                     )
-                )
-            ]),
-            html.Tr(children=[
-                html.Td(
-                    dcc.Graph(
-                        figure=createFig('rtstock', 'BAC', 'Bank of America')
+                ]),
+                html.Tr(children=[
+                    html.Td(
+                        dcc.Graph(
+                            figure=createFig('rtstock', 'BAC', 'Bank of America')
+                        )
+                    ),
+                    html.Td(
+                        dcc.Graph(
+                            figure=createFig('rtstock', 'MA', 'Mastercard')
+                        )
                     )
-                ),
-                html.Td(
-                    dcc.Graph(
-                        figure=createFig('rtstock', 'MA', 'Mastercard')
-                    )
-                )
-            ])
-        ])
+                ])
+            ],
+            style={"width": "100%", "tableLayout": "fixed"}
+        )
     ]
 
 
@@ -300,32 +352,35 @@ def update_finance(n):
 def update_manufacturing(n):
     return [
         html.H1(children='Manufacturing', style={"text-align": "center"}),
-        html.Table(children=[
-            html.Tr(children=[
-                html.Td(
-                    dcc.Graph(
-                        figure=createFig('rtstock', 'AAPL', 'Apple')
+        html.Table(
+            children=[
+                html.Tr(children=[
+                    html.Td(
+                        dcc.Graph(
+                            figure=createFig('rtstock', 'AAPL', 'Apple')
+                        ),
                     ),
-                ),
-                html.Td(
-                    dcc.Graph(
-                        figure=createFig('rtstock', 'MSFT', 'Microsoft')
+                    html.Td(
+                        dcc.Graph(
+                            figure=createFig('rtstock', 'MSFT', 'Microsoft')
+                        )
                     )
-                )
-            ]),
-            html.Tr(children=[
-                html.Td(
-                    dcc.Graph(
-                        figure=createFig('rtstock', 'MGPI', 'MGP Ingredients Inc')
+                ]),
+                html.Tr(children=[
+                    html.Td(
+                        dcc.Graph(
+                            figure=createFig('rtstock', 'MGPI', 'MGP Ingredients Inc')
+                        )
+                    ),
+                    html.Td(
+                        dcc.Graph(
+                            figure=createFig('rtstock', 'KWR', 'Quaker Chemical Corp')
+                        )
                     )
-                ),
-                html.Td(
-                    dcc.Graph(
-                        figure=createFig('rtstock', 'KWR', 'Quaker Chemical Corp')
-                    )
-                )
-            ])
-        ])
+                ])
+            ],
+            style={"width": "100%", "tableLayout": "fixed"}
+        )
     ]
 
 
@@ -333,32 +388,35 @@ def update_manufacturing(n):
 def update_information(n):
     return [
         html.H1(children='Information', style={"text-align": "center"}),
-        html.Table(children=[
-            html.Tr(children=[
-                html.Td(
-                    dcc.Graph(
-                        figure=createFig('rtstock', 'CMCSA', 'Comcast')
+        html.Table(
+            children=[
+                html.Tr(children=[
+                    html.Td(
+                        dcc.Graph(
+                            figure=createFig('rtstock', 'CMCSA', 'Comcast')
+                        ),
                     ),
-                ),
-                html.Td(
-                    dcc.Graph(
-                        figure=createFig('rtstock', 'VZ', 'Verizon')
+                    html.Td(
+                        dcc.Graph(
+                            figure=createFig('rtstock', 'VZ', 'Verizon')
+                        )
                     )
-                )
-            ]),
-            html.Tr(children=[
-                html.Td(
-                    dcc.Graph(
-                        figure=createFig('rtstock', 'T', 'AT&T')
+                ]),
+                html.Tr(children=[
+                    html.Td(
+                        dcc.Graph(
+                            figure=createFig('rtstock', 'T', 'AT&T')
+                        )
+                    ),
+                    html.Td(
+                        dcc.Graph(
+                            figure=createFig('rtstock', 'TMUS', 'T-Mobile')
+                        )
                     )
-                ),
-                html.Td(
-                    dcc.Graph(
-                        figure=createFig('rtstock', 'TMUS', 'T-Mobile')
-                    )
-                )
-            ])
-        ])
+                ])
+            ],
+            style={"width": "100%", "tableLayout": "fixed"}
+        )
     ]
 
 
@@ -366,32 +424,35 @@ def update_information(n):
 def update_retail(n):
     return [
         html.H1(children='Retail', style={"text-align": "center"}),
-        html.Table(children=[
-            html.Tr(children=[
-                html.Td(
-                    dcc.Graph(
-                        figure=createFig('rtstock', 'AMZN', 'Amazon')
+        html.Table(
+            children=[
+                html.Tr(children=[
+                    html.Td(
+                        dcc.Graph(
+                            figure=createFig('rtstock', 'AMZN', 'Amazon')
+                        ),
                     ),
-                ),
-                html.Td(
-                    dcc.Graph(
-                        figure=createFig('rtstock', 'WMT', 'Walmart')
+                    html.Td(
+                        dcc.Graph(
+                            figure=createFig('rtstock', 'WMT', 'Walmart')
+                        )
                     )
-                )
-            ]),
-            html.Tr(children=[
-                html.Td(
-                    dcc.Graph(
-                        figure=createFig('rtstock', 'HD', 'Home Depot')
+                ]),
+                html.Tr(children=[
+                    html.Td(
+                        dcc.Graph(
+                            figure=createFig('rtstock', 'HD', 'Home Depot')
+                        )
+                    ),
+                    html.Td(
+                        dcc.Graph(
+                            figure=createFig('rtstock', 'COST', 'Costco')
+                        )
                     )
-                ),
-                html.Td(
-                    dcc.Graph(
-                        figure=createFig('rtstock', 'COST', 'Costco')
-                    )
-                )
-            ])
-        ])
+                ])
+            ],
+            style={"width": "100%", "tableLayout": "fixed"}
+        )
     ]
 
 
@@ -447,17 +508,40 @@ def render_page_content(pathname):
         return html.P("This is page 3.2")
     elif pathname == "/page-4/1":
         return html.Div(children=[
-            html.H1(children='Machine Learning', style={"text-align": "center"}),
+            html.H1(children='Machine Learning', style={"textAlign": "center"}),
             html.Hr(),
-            html.H3(children='AutoReg Model', style={"text-align": "center"}),
             html.Div(
-                        dcc.Graph(
-                            id="ml1 id",
-                            figure=createFigML()
-                        )
-                    )
-                ],
-        ),
+                html.Table(children=[
+                    html.Tbody(children=[
+                        html.Tr(children=[
+                            html.Td(
+                                html.H4(children='AutoReg Model', style={"textAlign": "center"}),
+                            ),
+                            html.Td(
+                                html.H4(children='Arima Model', style={"textAlign": "center"}),
+                            )
+                        ]),
+                        html.Tr(children=[
+                            html.Td(
+                                dcc.Graph(
+                                    id="ml1 id",
+                                    figure=createFigAutoReg()
+                                ),
+                            ),
+                            html.Td(
+                                dcc.Graph(
+                                    id="ml1 id",
+                                    figure=createFigArima()
+                                ),
+                            )
+                        ])
+
+                    ]),
+
+                ], style={"width": "100%", "tableLayout": "fixed"})
+            )
+        ])
+
     elif pathname == "/page-4/2":
         return html.P("This is page 4.2")
     return dbc.Jumbotron(
