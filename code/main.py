@@ -275,6 +275,11 @@ submenu_4 = [
 
 sidebar = html.Div(
     [
+        html.H2("Title(TDB)", className="display-4"),
+        html.Hr(),
+        html.P(
+            "Subtitle (TBD)", className="lead"
+        ),
         dbc.Nav(submenu_1 + submenu_2 + submenu_3 + submenu_4, vertical=True),
     ],
     style=SIDEBAR_STYLE,
@@ -283,7 +288,7 @@ sidebar = html.Div(
 
 content = html.Div(id="page-content", style=CONTENT_STYLE)
 
-app.layout = html.Div([dcc.Location(id="url"), sidebar, content, html.Meta(httpEquiv="refresh", content="60")])
+app.layout = html.Div([dcc.Location(id="url"), sidebar, content])
 
 # this function is used to toggle the is_open property of each Collapse
 def toggle_collapse(n, is_open):
@@ -315,33 +320,36 @@ for i in range(1,5):
 @app.callback(Output('finance-live', 'children'), Input('interval-component', 'n_intervals'))
 def update_finance(n):
     return [
-        html.H1(children='Finance', style={"text-align": "center"}),
+        html.H1(children='Finance', style={"textAlign": "center"}),
         html.Table(
             children=[
-                html.Tr(children=[
-                    html.Td(
-                        dcc.Graph(
-                            figure=createFig('rtstock', 'V', 'VISA')
+                html.Tbody(children=[
+                    html.Tr(children=[
+                        html.Td(
+                            dcc.Graph(
+                                figure=createFig('rtstock', 'V', 'VISA')
+                            ),
                         ),
-                    ),
-                    html.Td(
-                        dcc.Graph(
-                            figure=createFig('rtstock', 'JPM', 'JPMorgan Chase')
+                        html.Td(
+                            dcc.Graph(
+                                figure=createFig('rtstock', 'JPM', 'JPMorgan Chase')
+                            )
                         )
-                    )
-                ]),
-                html.Tr(children=[
-                    html.Td(
-                        dcc.Graph(
-                            figure=createFig('rtstock', 'BAC', 'Bank of America')
+                    ]),
+                    html.Tr(children=[
+                        html.Td(
+                            dcc.Graph(
+                                figure=createFig('rtstock', 'BAC', 'Bank of America')
+                            )
+                        ),
+                        html.Td(
+                            dcc.Graph(
+                                figure=createFig('rtstock', 'MA', 'Mastercard')
+                            )
                         )
-                    ),
-                    html.Td(
-                        dcc.Graph(
-                            figure=createFig('rtstock', 'MA', 'Mastercard')
-                        )
-                    )
+                    ])
                 ])
+
             ],
             style={"width": "100%", "tableLayout": "fixed"}
         )
@@ -351,33 +359,37 @@ def update_finance(n):
 @app.callback(Output('manufacturing-live', 'children'), Input('interval-component', 'n_intervals'))
 def update_manufacturing(n):
     return [
-        html.H1(children='Manufacturing', style={"text-align": "center"}),
+        html.H1(children='Manufacturing', style={"textAlign": "center"}),
         html.Table(
             children=[
-                html.Tr(children=[
-                    html.Td(
-                        dcc.Graph(
-                            figure=createFig('rtstock', 'AAPL', 'Apple')
+                html.Tbody(children=[
+                    html.Tr(children=[
+                        html.Td(
+                            dcc.Graph(
+                                figure=createFig('rtstock', 'AAPL', 'Apple')
+                            ),
                         ),
-                    ),
-                    html.Td(
-                        dcc.Graph(
-                            figure=createFig('rtstock', 'MSFT', 'Microsoft')
+                        html.Td(
+                            dcc.Graph(
+                                figure=createFig('rtstock', 'MSFT', 'Microsoft')
+                            )
                         )
-                    )
-                ]),
-                html.Tr(children=[
-                    html.Td(
-                        dcc.Graph(
-                            figure=createFig('rtstock', 'MGPI', 'MGP Ingredients Inc')
+                    ]),
+                    html.Tr(children=[
+                        html.Td(
+                            dcc.Graph(
+                                figure=createFig('rtstock', 'MGPI', 'MGP Ingredients Inc')
+                            )
+                        ),
+                        html.Td(
+                            dcc.Graph(
+                                figure=createFig('rtstock', 'KWR', 'Quaker Chemical Corp')
+                            )
                         )
-                    ),
-                    html.Td(
-                        dcc.Graph(
-                            figure=createFig('rtstock', 'KWR', 'Quaker Chemical Corp')
-                        )
-                    )
+                    ])
+
                 ])
+
             ],
             style={"width": "100%", "tableLayout": "fixed"}
         )
@@ -387,33 +399,36 @@ def update_manufacturing(n):
 @app.callback(Output('information-live', 'children'), Input('interval-component', 'n_intervals'))
 def update_information(n):
     return [
-        html.H1(children='Information', style={"text-align": "center"}),
+        html.H1(children='Information', style={"textAlign": "center"}),
         html.Table(
             children=[
-                html.Tr(children=[
-                    html.Td(
-                        dcc.Graph(
-                            figure=createFig('rtstock', 'CMCSA', 'Comcast')
+                html.Tbody(children=[
+                    html.Tr(children=[
+                        html.Td(
+                            dcc.Graph(
+                                figure=createFig('rtstock', 'CMCSA', 'Comcast')
+                            ),
                         ),
-                    ),
-                    html.Td(
-                        dcc.Graph(
-                            figure=createFig('rtstock', 'VZ', 'Verizon')
+                        html.Td(
+                            dcc.Graph(
+                                figure=createFig('rtstock', 'VZ', 'Verizon')
+                            )
                         )
-                    )
-                ]),
-                html.Tr(children=[
-                    html.Td(
-                        dcc.Graph(
-                            figure=createFig('rtstock', 'T', 'AT&T')
+                    ]),
+                    html.Tr(children=[
+                        html.Td(
+                            dcc.Graph(
+                                figure=createFig('rtstock', 'T', 'AT&T')
+                            )
+                        ),
+                        html.Td(
+                            dcc.Graph(
+                                figure=createFig('rtstock', 'TMUS', 'T-Mobile')
+                            )
                         )
-                    ),
-                    html.Td(
-                        dcc.Graph(
-                            figure=createFig('rtstock', 'TMUS', 'T-Mobile')
-                        )
-                    )
+                    ])
                 ])
+
             ],
             style={"width": "100%", "tableLayout": "fixed"}
         )
@@ -423,33 +438,36 @@ def update_information(n):
 @app.callback(Output('retail-live', 'children'), Input('interval-component', 'n_intervals'))
 def update_retail(n):
     return [
-        html.H1(children='Retail', style={"text-align": "center"}),
+        html.H1(children='Retail', style={"textAlign": "center"}),
         html.Table(
             children=[
-                html.Tr(children=[
-                    html.Td(
-                        dcc.Graph(
-                            figure=createFig('rtstock', 'AMZN', 'Amazon')
+                html.Tbody(children=[
+                    html.Tr(children=[
+                        html.Td(
+                            dcc.Graph(
+                                figure=createFig('rtstock', 'AMZN', 'Amazon')
+                            ),
                         ),
-                    ),
-                    html.Td(
-                        dcc.Graph(
-                            figure=createFig('rtstock', 'WMT', 'Walmart')
+                        html.Td(
+                            dcc.Graph(
+                                figure=createFig('rtstock', 'WMT', 'Walmart')
+                            )
                         )
-                    )
-                ]),
-                html.Tr(children=[
-                    html.Td(
-                        dcc.Graph(
-                            figure=createFig('rtstock', 'HD', 'Home Depot')
+                    ]),
+                    html.Tr(children=[
+                        html.Td(
+                            dcc.Graph(
+                                figure=createFig('rtstock', 'HD', 'Home Depot')
+                            )
+                        ),
+                        html.Td(
+                            dcc.Graph(
+                                figure=createFig('rtstock', 'COST', 'Costco')
+                            )
                         )
-                    ),
-                    html.Td(
-                        dcc.Graph(
-                            figure=createFig('rtstock', 'COST', 'Costco')
-                        )
-                    )
+                    ])
                 ])
+
             ],
             style={"width": "100%", "tableLayout": "fixed"}
         )
