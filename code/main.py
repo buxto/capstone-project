@@ -38,6 +38,21 @@ def getData(table):
     df = pd.read_sql(query, conn)
     return df
 
+def createHistStock(ticker, title):
+    server = "gen10-data-fundamentals-21-11-sql-server.database.windows.net"
+    table = "dbo.hstock"
+    try:
+        conn1 = pymssql.connect(server, username, password, database)
+    except Exception as e:
+        print(e)
+
+    df = getData(table)
+    df2 = df[df["Ticker"] == ticker]
+    df2.sort_values(by=['Date'], inplace=True)
+    fig = px.line(df2, x="Date", y="Open", title=f"{title} ({ticker})")
+
+    return fig
+
 
 def createFig(table, ticker, title):
     df = getData(table)
@@ -45,18 +60,6 @@ def createFig(table, ticker, title):
     df2.sort_values(by=['Time'], inplace=True)
     fig = px.line(df2, x="Time", y="Current Price", title=f"{title} ({ticker})")
     return fig
-
-
-# def createTestFig():
-#
-#     fig = go.Figure(go.Indicator(
-#         mode="gauge+number",
-#         value=45,
-#         title={'text': "Speed"},
-#         domain={'x': [0, 1], 'y': [0, 1]}
-#     ))
-#
-#     return fig
 
 
 def createFigArima():
@@ -218,8 +221,10 @@ submenu_2 = [
     # we use the collapse component to hide and reveal the navigation links
     dbc.Collapse(
         [
-            dbc.NavLink("Page 2.1", href="/page-2/1"),
-            dbc.NavLink("Page 2.2", href="/page-2/2"),
+            dbc.NavLink("Finance", href="/page-2/1"),
+            dbc.NavLink("Manufacturing", href="/page-2/2"),
+            dbc.NavLink("Information", href="/page-2/3"),
+            dbc.NavLink("Retail", href="/page-2/4"),
         ],
         id="submenu-2-collapse",
     ),
@@ -304,7 +309,7 @@ def set_navitem_class(is_open):
     return ""
 
 
-for i in range(1,5):
+for i in range(1, 5):
     app.callback(
         Output(f"submenu-{i}-collapse", "is_open"),
         [Input(f"submenu-{i}", "n_clicks")],
@@ -473,6 +478,45 @@ def update_retail(n):
         )
     ]
 
+def historicalStockGraphs(industry, tickers, names):
+    return html.Div(children=[
+            html.H1(children=industry, style={"textAlign": "center"}),
+            html.Table(children=[
+                html.Tbody(
+                    children=[
+                        html.Tr(children=[
+                            html.Td(
+                                dcc.Graph(
+                                    figure=createHistStock(tickers[0], names[0])
+                                )
+                            ),
+                            html.Td(
+                                dcc.Graph(
+                                    figure=createHistStock(tickers[1], names[1])
+                                )
+                            )
+                        ],
+                        ),
+                        html.Tr(children=[
+                            html.Td(
+                                dcc.Graph(
+                                    figure=createHistStock(tickers[2], names[2])
+                                )
+                            ),
+                            html.Td(
+                                dcc.Graph(
+                                    figure=createHistStock(tickers[3], names[3])
+                                )
+                            )
+                        ],
+                        ),
+                    ],
+                ),
+
+            ], style={"width": "100%", "tableLayout": "fixed"}
+            ),
+        ]
+        )
 
 @app.callback(Output("page-content", "children"), [Input("url", "pathname")])
 def render_page_content(pathname):
@@ -517,9 +561,13 @@ def render_page_content(pathname):
         ])
 
     elif pathname == "/page-2/1":
-        return html.P("This is page 2.1")
+        return historicalStockGraphs('Finance', ['V', 'JPM', 'BAC', 'MA'], ['VISA', 'JPMorgan Chase', 'Bank of America','Mastercard'])
     elif pathname == "/page-2/2":
-        return html.P("This is page 2.2")
+        return historicalStockGraphs('Manufacturing', ['AAPL', 'MSFT', 'MGPI', 'KWR'], ['Apple', 'Microsoft', 'MGP Ingredients Inc','Quaker Chemical Corp'])
+    elif pathname == "/page-2/3":
+        return historicalStockGraphs('Information', ['CMCSA', 'VZ', 'T', 'TMUS'], ['Comcast', 'Verizon', 'AT&T','T-Mobile'])
+    elif pathname == "/page-2/4":
+        return historicalStockGraphs('Retail', ['AMZN', 'WMT', 'HD', 'COST'], ['Amazon', 'Walmart', 'Home Depot','Costco'])
     elif pathname == "/page-3/1":
         return html.P("This is page 3.1")
     elif pathname == "/page-3/2":
