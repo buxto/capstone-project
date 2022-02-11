@@ -98,7 +98,7 @@ def createFigML():
 # link fontawesome to get the chevron icons
 FA = "https://use.fontawesome.com/releases/v5.8.1/css/all.css"
 
-app = dash.Dash(external_stylesheets=[dbc.themes.BOOTSTRAP, FA])
+app = dash.Dash(external_stylesheets=[dbc.themes.BOOTSTRAP, FA], suppress_callback_exceptions=True)
 server = app.server
 
 # the style arguments for the sidebar.
@@ -250,7 +250,7 @@ def set_navitem_class(is_open):
     return ""
 
 
-for i in [1, 2, 3, 4]:
+for i in range(1,5):
     app.callback(
         Output(f"submenu-{i}-collapse", "is_open"),
         [Input(f"submenu-{i}", "n_clicks")],
@@ -263,173 +263,179 @@ for i in [1, 2, 3, 4]:
     )(set_navitem_class)
 
 
-# dcc.Interval(
-#     id='interval-component',
-#     interval=60*1000,
-#     n_intervals=0
-# )
-# @app.callback(Output('graph_id', 'figure'),Input('interval-component', 'n_intervals'))
+@app.callback(Output('finance-live', 'children'), Input('interval-component', 'n_intervals'))
+def update_finance(n):
+    return [
+        html.H1(children='Finance', style={"text-align": "center"}),
+        html.Table(children=[
+            html.Tr(children=[
+                html.Td(
+                    dcc.Graph(
+                        figure=createFig('rtstock', 'V', 'VISA')
+                    ),
+                ),
+                html.Td(
+                    dcc.Graph(
+                        figure=createFig('rtstock', 'JPM', 'JPMorgan Chase')
+                    )
+                )
+            ]),
+            html.Tr(children=[
+                html.Td(
+                    dcc.Graph(
+                        figure=createFig('rtstock', 'BAC', 'Bank of America')
+                    )
+                ),
+                html.Td(
+                    dcc.Graph(
+                        figure=createFig('rtstock', 'MA', 'Mastercard')
+                    )
+                )
+            ])
+        ])
+    ]
 
-# def UpdateData(n):
-#     createGraph()
+
+@app.callback(Output('manufacturing-live', 'children'), Input('interval-component', 'n_intervals'))
+def update_manufacturing(n):
+    return [
+        html.H1(children='Manufacturing', style={"text-align": "center"}),
+        html.Table(children=[
+            html.Tr(children=[
+                html.Td(
+                    dcc.Graph(
+                        figure=createFig('rtstock', 'AAPL', 'Apple')
+                    ),
+                ),
+                html.Td(
+                    dcc.Graph(
+                        figure=createFig('rtstock', 'MSFT', 'Microsoft')
+                    )
+                )
+            ]),
+            html.Tr(children=[
+                html.Td(
+                    dcc.Graph(
+                        figure=createFig('rtstock', 'MGPI', 'MGP Ingredients Inc')
+                    )
+                ),
+                html.Td(
+                    dcc.Graph(
+                        figure=createFig('rtstock', 'KWR', 'Quaker Chemical Corp')
+                    )
+                )
+            ])
+        ])
+    ]
+
+
+@app.callback(Output('information-live', 'children'), Input('interval-component', 'n_intervals'))
+def update_information(n):
+    return [
+        html.H1(children='Information', style={"text-align": "center"}),
+        html.Table(children=[
+            html.Tr(children=[
+                html.Td(
+                    dcc.Graph(
+                        figure=createFig('rtstock', 'CMCSA', 'Comcast')
+                    ),
+                ),
+                html.Td(
+                    dcc.Graph(
+                        figure=createFig('rtstock', 'VZ', 'Verizon')
+                    )
+                )
+            ]),
+            html.Tr(children=[
+                html.Td(
+                    dcc.Graph(
+                        figure=createFig('rtstock', 'T', 'AT&T')
+                    )
+                ),
+                html.Td(
+                    dcc.Graph(
+                        figure=createFig('rtstock', 'TMUS', 'T-Mobile')
+                    )
+                )
+            ])
+        ])
+    ]
+
+
+@app.callback(Output('retail-live', 'children'), Input('interval-component', 'n_intervals'))
+def update_retail(n):
+    return [
+        html.H1(children='Retail', style={"text-align": "center"}),
+        html.Table(children=[
+            html.Tr(children=[
+                html.Td(
+                    dcc.Graph(
+                        figure=createFig('rtstock', 'AMZN', 'Amazon')
+                    ),
+                ),
+                html.Td(
+                    dcc.Graph(
+                        figure=createFig('rtstock', 'WMT', 'Walmart')
+                    )
+                )
+            ]),
+            html.Tr(children=[
+                html.Td(
+                    dcc.Graph(
+                        figure=createFig('rtstock', 'HD', 'Home Depot')
+                    )
+                ),
+                html.Td(
+                    dcc.Graph(
+                        figure=createFig('rtstock', 'COST', 'Costco')
+                    )
+                )
+            ])
+        ])
+    ]
 
 
 @app.callback(Output("page-content", "children"), [Input("url", "pathname")])
 def render_page_content(pathname):
     if pathname in ["/", "/page-1/1"]:
-        return html.Div(children=[
-            html.H1(children='Finance', style={"text-align": "center"}),
-            html.Table(children=[
-                html.Tr(children=[
-                    html.Td(
-                        dcc.Graph(
-                            id="f1 id",
-                            figure=createFig('rtstock', 'V', 'VISA')
-                        ),
-                    ),
-                    html.Td(
-                        dcc.Graph(
-                            id="f2 id",
-                            figure=createFig('rtstock', 'JPM', 'JPMorgan Chase')
-                        )
-                    )
-                ],
-                ),
-                html.Tr(children=[
-                    html.Td(
-                        dcc.Graph(
-                            id="f3 id",
-                            figure=createFig('rtstock', 'BAC', 'Bank of America')
-                        )
-                    ),
-                    html.Td(
-                        dcc.Graph(
-                            id="f4 id",
-                            figure=createFig('rtstock', 'MA', 'Mastercard')
-                        )
-                    )
-                ],
-                ),
-            ]
-            ),
-            ]
-        ),
+        return html.Div([
+            html.Div(id='finance-live'),
+            dcc.Interval(
+                id='interval-component',
+                interval=60*1000,
+                n_intervals=0
+            )
+        ])
 
-    elif pathname == "/page-1/2":
-        return html.Div(children=[
-            html.H1(children='Manufacturing', style={"text-align": "center"}),
-            html.Table(children=[
-                html.Tr(children=[
-                    html.Td(
-                        dcc.Graph(
-                            id="m1 id",
-                            figure=createFig('rtstock', 'AAPL', 'Apple')
-                        )
-                    ),
-                    html.Td(
-                        dcc.Graph(
-                            id="m2 id",
-                            figure=createFig('rtstock', 'MSFT', 'Microsoft')
-                        )
-                    )
-                ],
-                ),
-                html.Tr(children=[
-                    html.Td(
-                        dcc.Graph(
-                            id="m3 id",
-                            figure=createFig('rtstock', 'MGPI', 'MGP Ingredients Inc')
-                        )
-                    ),
-                    html.Td(
-                        dcc.Graph(
-                            id="m4 id",
-                            figure=createFig('rtstock', 'KWR', 'Quaker Chemical Corp')
-                        )
-                    )
-                ],
-                ),
-            ]
-            ),
-            ]
-        ),
+    if pathname == "/page-1/2":
+        return html.Div([
+            html.Div(id='manufacturing-live'),
+            dcc.Interval(
+                id='interval-component',
+                interval=60*1000,
+                n_intervals=0
+            )
+        ])
 
-    elif pathname == "/page-1/3":
-        return html.Div(children=[
-            html.H1(children='Information', style={"text-align": "center"}),
-            html.Table(children=[
-                html.Tr(children=[
-                    html.Td(
-                        dcc.Graph(
-                            id="i1 id",
-                            figure=createFig('rtstock', 'CMCSA', 'Comcast')
-                        )
-                    ),
-                    html.Td(
-                        dcc.Graph(
-                            id="i2 id",
-                            figure=createFig('rtstock', 'VZ', 'Verizon')
-                        )
-                    )
-                ],
-                ),
-                html.Tr(children=[
-                    html.Td(
-                        dcc.Graph(
-                            id="i3 id",
-                            figure=createFig('rtstock', 'T', 'AT&T')
-                        )
-                    ),
-                    html.Td(
-                        dcc.Graph(
-                            id="i4 id",
-                            figure=createFig('rtstock', 'TMUS', 'T-Mobile')
-                        )
-                    )
-                ],
-                ),
-            ]
-            ),
-            ]
-        ),
-    elif pathname == "/page-1/4":
-        return html.Div(children=[
-            html.H1(children='Retail', style={"text-align": "center"}),
-            html.Table(children=[
-                html.Tr(children=[
-                    html.Td(
-                        dcc.Graph(
-                            id="i1 id",
-                            figure=createFig('rtstock', 'AMZN', 'Amazon')
-                        )
-                    ),
-                    html.Td(
-                        dcc.Graph(
-                            id="i2 id",
-                            figure=createFig('rtstock', 'WMT', 'Walmart')
-                        )
-                    )
-                ],
-                ),
-                html.Tr(children=[
-                    html.Td(
-                        dcc.Graph(
-                            id="i3 id",
-                            figure=createFig('rtstock', 'HD', 'Home Depot')
-                        )
-                    ),
-                    html.Td(
-                        dcc.Graph(
-                            id="i4 id",
-                            figure=createFig('rtstock', 'COST', 'Costco')
-                        )
-                    )
-                ],
-                ),
-            ]
-            ),
-            ]
-        ),
+    if pathname == "/page-1/3":
+        return html.Div([
+            html.Div(id='information-live'),
+            dcc.Interval(
+                id='interval-component',
+                interval=60*1000,
+                n_intervals=0
+            )
+        ])
+
+    if pathname == "/page-1/4":
+        return html.Div([
+            html.Div(id='retail-live'),
+            dcc.Interval(
+                id='interval-component',
+                interval=60*1000,
+                n_intervals=0
+            )
+        ])
 
     elif pathname == "/page-2/1":
         return html.P("This is page 2.1")
@@ -462,11 +468,6 @@ def render_page_content(pathname):
         ]
     )
 
-
-# @app.callback(Output('f1 id', 'figure'), Input('interval-component', 'n_intervals'))
-# def update_fin(arg):
-#     print(f"Update fins {arg}")
-#
 
 if __name__ == '__main__':
     app.run_server(debug=True)
