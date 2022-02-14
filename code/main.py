@@ -13,7 +13,7 @@ import plotly.io as pio
 import plotly
 import matplotlib.pyplot as plt
 import joblib
-
+from statsmodels.tsa.arima.model import ARIMA
 from statsmodels.tsa.stattools import adfuller
 from statsmodels.tsa.ar_model import AutoReg as ar
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
@@ -56,6 +56,10 @@ def createHistStock(ticker, title):
     df2 = df2[df2['Date'] >= datetime(2021, 9, 21, 0, 0, 0, 0).date()]
     fig = make_subplots(specs=[[{"secondary_y": True}]])
     fig.update_layout(title=f"{title} ({ticker})")
+    fig.update_layout({
+        'plot_bgcolor': 'rgba(0, 0, 0, 0)',
+        'paper_bgcolor': 'rgba(0, 0, 0, 0)'
+    })
     # fig = px(df2, x="Date", y="Open", title=f"{title} ({ticker})")
     fig.add_trace(go.Bar(name="Volume", x=df2['Date'], y=df2['Volume'], opacity=0.5), secondary_y=False)
 
@@ -94,7 +98,7 @@ def createHistCrypto(currency, title):
     df2 = df2[df2['Date'] >= datetime(2021, 9, 21, 0, 0, 0, 0).date()]
 
 
-    # pio.templates.default = "plotly_dark"
+    pio.templates.default = "plotly_dark"
 
     fig = make_subplots(specs=[[{"secondary_y": True}]])
     # fig = px(df2, x="Date", y="Open", title=f"{title} ({ticker})")
@@ -127,6 +131,7 @@ def createFig(table, ticker, title):
     df2 = df[df["Ticker"] == ticker]
     df2.sort_values(by=['Time'], inplace=True)
     fig = px.line(df2, x="Time", y="Current Price", title=f"{title} ({ticker})")
+
     return fig
 
 
@@ -134,7 +139,6 @@ def createFigArima():
     server = "gen10-data-fundamentals-21-11-sql-server.database.windows.net"
     table = "dbo.hstock"
     try:
-        # print(f"server {server}, username {username}, password {password}, database {database}")
         conn1 = pymssql.connect(server, username, password, database)
     except Exception as e:
         print(e)
@@ -146,29 +150,38 @@ def createFigArima():
     apple_df = hst_df[hst_df['Ticker'] == 'AAPL']
     apple_df = apple_df.drop(columns='Ticker')
     apple_df['Date'] = pd.to_datetime(apple_df['Date'], format='%Y-%m-%d')
+    apple_df.sort_values('Date', inplace=True)
+    apple_df = apple_df[apple_df['Date'] >= '2021-01-01']
     apple_df.reset_index(drop=True, inplace=True)
 
     m_df = apple_df.drop(columns=['Date', 'Open', 'Close', 'Low', 'Volume'])
 
+    ar_test_data = m_df.iloc[-15:]
+    ar_train_data = m_df.iloc[:-15]
+
     try:
-        arima_mdl = load(r'arima.model')
+        arima_mdl = load(r'starima.model')
     except Exception as e:
         print(e)
 
-    new_dates = [m_df.index[-1] + x for x in range(1, 11)]
+    new_dates = [m_df.index[-1] + x for x in range(1, 21)]
     df_pred = pd.DataFrame(index=new_dates, columns=m_df.columns)
-    ar_df = pd.concat([m_df, df_pred])
-    ar_df['predictions'] = arima_mdl.predict(start=m_df.shape[0], end=ar_df.shape[0])
+    arima_df = pd.concat([m_df, df_pred])
+    arima_df['predictions'] = arima_mdl.predict(start=ar_train_data.shape[0], end=arima_df.shape[0])
+
 
     # Plotting
-    sub_fig = make_subplots(specs=[[{"secondary_y": False}]])
+    plot_df = arima_df.iloc[ar_train_data.shape[0]:ar_train_data.shape[0] + 5]
 
-    # fig = px.line(ar_df, y='High', markers=True)
-    fig1 = px.line(ar_df, y='High', markers=True)
-    fig2 = px.line(ar_df, y='predictions', markers=True, color_discrete_sequence=px.colors.qualitative.Light24)
-    sub_fig.add_traces(fig1.data + fig2.data)
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(y=plot_df['High'],
+                             mode='lines+markers',
+                             name='High'))
+    fig.add_trace(go.Scatter(y=plot_df['predictions'],
+                             mode='lines+markers',
+                             name='Predictions'))
 
-    return sub_fig
+    return fig
 
 
 def createFigAutoReg():
@@ -187,32 +200,41 @@ def createFigAutoReg():
     apple_df = hst_df[hst_df['Ticker'] == 'AAPL']
     apple_df = apple_df.drop(columns='Ticker')
     apple_df['Date'] = pd.to_datetime(apple_df['Date'], format='%Y-%m-%d')
+    apple_df.sort_values('Date', inplace=True)
+    apple_df = apple_df[apple_df['Date'] >= '2021-01-01']
     apple_df.reset_index(drop=True, inplace=True)
 
     m_df = apple_df.drop(columns=['Date', 'Open', 'Close', 'Low', 'Volume'])
 
+    ar_test_data = m_df.iloc[-15:]
+    ar_train_data = m_df.iloc[:-15]
+
     try:
-        res2 = load(r'autoreg.model')
+        res = load(r'stautoreg.model')
     except Exception as e:
         print(e)
 
-    new_dates = [m_df.index[-1] + x for x in range(1, 11)]
+    new_dates = [m_df.index[-1] + x for x in range(1, 21)]
     df_pred = pd.DataFrame(index=new_dates, columns=m_df.columns)
 
     ar_df = pd.concat([m_df, df_pred])
 
     # start at the end of original data, go til the end of this new dataframe
-    ar_df['predictions'] = res2.predict(start=m_df.shape[0], end=ar_df.shape[0])
+    ar_df['predictions'] = res.predict(start=ar_train_data.shape[0], end=ar_df.shape[0])
 
     # Plotting
-    sub_fig = make_subplots(specs=[[{"secondary_y": False}]])
+    plot_df = ar_df.iloc[ar_train_data.shape[0]:ar_train_data.shape[0] + 5]
 
-    # fig = px.line(ar_df, y='High', markers=True)
-    fig1 = px.line(ar_df, y='High', markers=True)
-    fig2 = px.line(ar_df, y='predictions', markers=True, color_discrete_sequence=px.colors.qualitative.Light24)
-    sub_fig.add_traces(fig1.data + fig2.data)
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(y=plot_df['High'],
+                             mode='lines+markers',
+                             name='High'))
+    fig.add_trace(go.Scatter(y=plot_df['predictions'],
+                             mode='lines+markers',
+                             name='Predictions'))
 
-    return sub_fig
+
+    return fig
 
 
 # -----------------------------------------------------------------------
