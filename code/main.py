@@ -53,6 +53,7 @@ def createHistStock(ticker, title):
     df2 = df[df["Ticker"] == ticker]
     df2.sort_values(by=['Date'], inplace=True)
 
+    df2 = df2[df2['Date'] >= datetime(2021, 9, 21, 0, 0, 0, 0).date()]
     fig = make_subplots(specs=[[{"secondary_y": True}]])
     fig.update_layout(title=f"{title} ({ticker})")
     # fig = px(df2, x="Date", y="Open", title=f"{title} ({ticker})")
@@ -70,6 +71,7 @@ def createHistStock(ticker, title):
     fig.update_xaxes(
         rangebreaks=[
             dict(bounds=["sat", "mon"]),  # hide weekends
+            dict(values=["2021-11-25", "2021-12-24", "2022-01-17"]),  # hide holidays
         ]
     )
 
@@ -89,7 +91,7 @@ def createHistCrypto(currency, title):
     df2 = df[df["Currency"] == currency]
     df2.sort_values(by=['Date'], inplace=True)
 
-    # df2 = df2.filter(df2['Date'] >= datetime(2021, 9, 21, 0, 0, 0, 0).date())
+    df2 = df2[df2['Date'] >= datetime(2021, 9, 21, 0, 0, 0, 0).date()]
 
 
     # pio.templates.default = "plotly_dark"
@@ -114,6 +116,7 @@ def createHistCrypto(currency, title):
     fig.update_xaxes(
         rangebreaks=[
             dict(bounds=["sat", "mon"]),  # hide weekends
+            dict(values=["2021-11-25", "2021-12-24", "2022-01-17"])  # hide holidays
         ]
     )
     return fig
@@ -688,7 +691,8 @@ def render_page_content(pathname):
         ])
 
     if pathname == "/page-1/2":
-        return historicalStockGraphs('Finance', ['V', 'JPM', 'BAC', 'MA'], ['VISA', 'JPMorgan Chase', 'Bank of America','Mastercard'])
+        return historicalStockGraphs('Finance', ['V', 'JPM', 'BAC', 'MA'],
+                                     ['VISA', 'JPMorgan Chase', 'Bank of America', 'Mastercard'])
 
     if pathname == "/page-1/3":
         return html.P("Page 1.3")
@@ -704,11 +708,12 @@ def render_page_content(pathname):
         ])
 
     if pathname == "/page-2/2":
-        return historicalStockGraphs('Manufacturing', ['AAPL', 'MSFT', 'MGPI', 'KWR'], ['Apple', 'Microsoft', 'MGP Ingredients Inc','Quaker Chemical Corp'])
+        return historicalStockGraphs('Manufacturing', ['AAPL', 'MSFT', 'MGPI', 'KWR'],
+                                     ['Apple', 'Microsoft', 'MGP Ingredients Inc', 'Quaker Chemical Corp'])
 
     if pathname == "/page-2/3":
         return html.P("Page 2.3")
-        
+
     if pathname == "/page-3/1":
         return html.Div([
             html.Div(id='information-live'),
