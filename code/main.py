@@ -8,6 +8,8 @@ import pymssql
 from joblib import dump, load
 from plotly.subplots import make_subplots
 import plotly.graph_objs as go
+from datetime import datetime
+import plotly.io as pio
 import plotly
 import matplotlib.pyplot as plt
 import joblib
@@ -50,12 +52,32 @@ def createHistStock(ticker, title):
     df = getData(table)
     df2 = df[df["Ticker"] == ticker]
     df2.sort_values(by=['Date'], inplace=True)
-    fig = px.line(df2, x="Date", y="Open", title=f"{title} ({ticker})")
+
+    fig = make_subplots(specs=[[{"secondary_y": True}]])
+    fig.update_layout(title=f"{title} ({ticker})")
+    # fig = px(df2, x="Date", y="Open", title=f"{title} ({ticker})")
+    fig.add_trace(go.Bar(name="Volume", x=df2['Date'], y=df2['Volume'], opacity=0.5), secondary_y=False)
+
+    fig.add_trace(go.Candlestick(name="Price",
+                                 x=df2['Date'],
+                                 open=df2['Open'],
+                                 high=df2['High'],
+                                 low=df2['Low'],
+                                 close=df2['Close'],
+                                 line=dict(width=1)
+                                 ),
+                                 secondary_y=True)
+    fig.update_xaxes(
+        rangebreaks=[
+            dict(bounds=["sat", "mon"]),  # hide weekends
+        ]
+    )
 
     return fig
 
 
-def createHistCryptoStock(currency, title):
+
+def createHistCrypto(currency, title):
     server = "gen10-data-fundamentals-21-11-sql-server.database.windows.net"
     table = "dbo.hcrypto"
     try:
@@ -66,9 +88,36 @@ def createHistCryptoStock(currency, title):
     df = getData(table)
     df2 = df[df["Currency"] == currency]
     df2.sort_values(by=['Date'], inplace=True)
-    fig = px.line(df2, x="Date", y="Open", title=f"{title} ({currency})")
 
+    # df2 = df2.filter(df2['Date'] >= datetime(2021, 9, 21, 0, 0, 0, 0).date())
+
+
+    # pio.templates.default = "plotly_dark"
+
+    fig = make_subplots(specs=[[{"secondary_y": True}]])
+    # fig = px(df2, x="Date", y="Open", title=f"{title} ({ticker})")
+    fig.add_trace(go.Bar(name="Volume", x=df2['Date'], y=df2['Volume'], opacity=0.5), secondary_y=False)
+    fig.update_layout(title=f"{title} ({currency})")
+    fig.update_layout({
+        'plot_bgcolor': 'rgba(0, 0, 0, 0)',
+        'paper_bgcolor': 'rgba(0, 0, 0, 0)'
+    })
+    fig.add_trace(go.Candlestick(name="Price",
+                                 x=df2['Date'],
+                                 open=df2['Open'],
+                                 high=df2['High'],
+                                 low=df2['Low'],
+                                 close=df2['Close'],
+                                 line=dict(width=1)
+                                 ),
+                                 secondary_y=True)
+    fig.update_xaxes(
+        rangebreaks=[
+            dict(bounds=["sat", "mon"]),  # hide weekends
+        ]
+    )
     return fig
+
 
 def createFig(table, ticker, title):
     df = getData(table)
@@ -178,16 +227,16 @@ SIDEBAR_STYLE = {
     "top": 0,
     "left": 0,
     "bottom": 0,
-    "width": "16rem",
+    "width": "17rem",
     "padding": "2rem 1rem",
     "backgroundColor": "#f8f9fa",
+    "overflow-y": "scroll"
 }
 # The styles for the main contnet position it to the rigth of the sidebar and add some padding
 CONTENT_STYLE = {
     "marginLeft": "18rem",
     "marginRight": "2rem",
     "padding": "2rem 1rem",
-    "overflowX": "scroll"
 }
 
 submenu_1 = [
@@ -195,7 +244,7 @@ submenu_1 = [
         # use Row and Col components to postion the chevrons
         dbc.Row(
             [
-                dbc.Col("Live Stock Data"),
+                dbc.Col("Finance Industry"),
                 dbc.Col(
                     html.I(className="fas fa-chevron-right me-3"),
                     width="auto",
@@ -209,10 +258,9 @@ submenu_1 = [
     # we use the collapse component to hide and reveal the navigation links
     dbc.Collapse(
         [
-            dbc.NavLink("Finance", href="/page-1/1"),
-            dbc.NavLink("Manufacturing", href="/page-1/2"),
-            dbc.NavLink("Information", href="/page-1/3"),
-            dbc.NavLink("Retail", href="/page-1/4"),
+            dbc.NavLink("Live Stock Data", href="/page-1/1"),
+            dbc.NavLink("Historical Stock Data", href="/page-1/2"),
+            dbc.NavLink("Industry Data", href="/page-1/3")
         ],
         id="submenu-1-collapse",
     ),
@@ -223,7 +271,7 @@ submenu_2 = [
         # use Row and Col components to postion the chevrons
         dbc.Row(
             [
-                dbc.Col("Historical Stock Data"),
+                dbc.Col("Manufacturing Industry"),
                 dbc.Col(
                     html.I(className="fas fa-chevron-right me-3"),
                     width="auto",
@@ -237,10 +285,9 @@ submenu_2 = [
     # we use the collapse component to hide and reveal the navigation links
     dbc.Collapse(
         [
-            dbc.NavLink("Finance", href="/page-2/1"),
-            dbc.NavLink("Manufacturing", href="/page-2/2"),
-            dbc.NavLink("Information", href="/page-2/3"),
-            dbc.NavLink("Retail", href="/page-2/4"),
+            dbc.NavLink("Live Stock Data", href="/page-2/1"),
+            dbc.NavLink("Historical Stock Data", href="/page-2/2"),
+            dbc.NavLink("Industry Data", href="/page-2/3")
         ],
         id="submenu-2-collapse",
     ),
@@ -250,7 +297,7 @@ submenu_3 = [
     html.Li(
         dbc.Row(
             [
-                dbc.Col("Historical Crypto Data"),
+                dbc.Col("Information Industry"),
                 dbc.Col(
                     html.I(className="fas fa-chevron-right me-3"),
                     width="auto",
@@ -263,8 +310,9 @@ submenu_3 = [
     ),
     dbc.Collapse(
         [
-            dbc.NavLink("Crypto Stocks", href="/page-3/1"),
-            # dbc.NavLink("Page 3.2", href="/page-3/2"),
+            dbc.NavLink("Live Stock Data", href="/page-3/1"),
+            dbc.NavLink("Historical Stock Data", href="/page-3/2"),
+            dbc.NavLink("Industry Data", href="/page-3/3")
         ],
         id="submenu-3-collapse",
     ),
@@ -274,7 +322,7 @@ submenu_4 = [
     html.Li(
         dbc.Row(
             [
-                dbc.Col("Machine Learning"),
+                dbc.Col("Retail Industry"),
                 dbc.Col(
                     html.I(className="fas fa-chevron-right me-3"),
                     width="auto",
@@ -287,10 +335,59 @@ submenu_4 = [
     ),
     dbc.Collapse(
         [
-            dbc.NavLink("Stocks", href="/page-4/1"),
-            dbc.NavLink("Cryptocurrency", href="/page-4/2"),
+            dbc.NavLink("Live Stock Data", href="/page-4/1"),
+            dbc.NavLink("Historical Stock Data", href="/page-4/2"),
+            dbc.NavLink("Industry Data", href="/page-4/3")
         ],
         id="submenu-4-collapse",
+    ),
+]
+
+submenu_5 = [
+    html.Li(
+        dbc.Row(
+            [
+                dbc.Col("Cryptocurrencies"),
+                dbc.Col(
+                    html.I(className="fas fa-chevron-right me-3"),
+                    width="auto",
+                ),
+            ],
+            className="my-1",
+        ),
+        style={"cursor": "pointer"},
+        id="submenu-5",
+    ),
+    dbc.Collapse(
+        [
+            dbc.NavLink("Historial Crypto Data", href="/page-5/1"),
+            dbc.NavLink("Crypto vs. Stocks", href="/page-5/2"),
+        ],
+        id="submenu-5-collapse",
+    ),
+]
+
+submenu_6 = [
+    html.Li(
+        dbc.Row(
+            [
+                dbc.Col("Machine Learning"),
+                dbc.Col(
+                    html.I(className="fas fa-chevron-right me-3"),
+                    width="auto",
+                ),
+            ],
+            className="my-1",
+        ),
+        style={"cursor": "pointer"},
+        id="submenu-6",
+    ),
+    dbc.Collapse(
+        [
+            dbc.NavLink("Stocks", href="/page-6/1"),
+            dbc.NavLink("Cryptocurrency", href="/page-6/2"),
+        ],
+        id="submenu-6-collapse",
     ),
 ]
 
@@ -301,7 +398,7 @@ sidebar = html.Div(
         html.P(
             "Subtitle (TBD)", className="lead"
         ),
-        dbc.Nav(submenu_1 + submenu_2 + submenu_3 + submenu_4, vertical=True),
+        dbc.Nav(submenu_1 + submenu_2 + submenu_3 + submenu_4 + submenu_5 + submenu_6, vertical=True),
     ],
     style=SIDEBAR_STYLE,
     id="sidebar",
@@ -310,6 +407,7 @@ sidebar = html.Div(
 content = html.Div(id="page-content", style=CONTENT_STYLE)
 
 app.layout = html.Div([dcc.Location(id="url"), sidebar, content])
+
 
 # this function is used to toggle the is_open property of each Collapse
 def toggle_collapse(n, is_open):
@@ -325,7 +423,7 @@ def set_navitem_class(is_open):
     return ""
 
 
-for i in range(1, 5):
+for i in range(1, 7):
     app.callback(
         Output(f"submenu-{i}-collapse", "is_open"),
         [Input(f"submenu-{i}", "n_clicks")],
@@ -497,85 +595,84 @@ def update_retail(n):
 
 def historicalStockGraphs(industry, tickers, names):
     return html.Div(children=[
-            html.H1(children=industry, style={"textAlign": "center"}),
-            html.Table(children=[
-                html.Tbody(
-                    children=[
-                        html.Tr(children=[
-                            html.Td(
-                                dcc.Graph(
-                                    figure=createHistStock(tickers[0], names[0])
-                                )
-                            ),
-                            html.Td(
-                                dcc.Graph(
-                                    figure=createHistStock(tickers[1], names[1])
-                                )
+        html.H1(children=industry, style={"textAlign": "center"}),
+        html.Table(children=[
+            html.Tbody(
+                children=[
+                    html.Tr(children=[
+                        html.Td(
+                            dcc.Graph(
+                                figure=createHistStock(tickers[0], names[0])
                             )
-                        ],
                         ),
-                        html.Tr(children=[
-                            html.Td(
-                                dcc.Graph(
-                                    figure=createHistStock(tickers[2], names[2])
-                                )
-                            ),
-                            html.Td(
-                                dcc.Graph(
-                                    figure=createHistStock(tickers[3], names[3])
-                                )
+                        html.Td(
+                            dcc.Graph(
+                                figure=createHistStock(tickers[1], names[1])
                             )
-                        ],
-                        ),
+                        )
                     ],
-                ),
-
-            ], style={"width": "100%", "tableLayout": "fixed"}
+                    ),
+                    html.Tr(children=[
+                        html.Td(
+                            dcc.Graph(
+                                figure=createHistStock(tickers[2], names[2])
+                            )
+                        ),
+                        html.Td(
+                            dcc.Graph(
+                                figure=createHistStock(tickers[3], names[3])
+                            )
+                        )
+                    ],
+                    ),
+                ],
             ),
-        ]
-        )
+
+        ], style={"width": "100%", "tableLayout": "fixed"}
+        ),
+    ]
+    )
 
 
-def historicalCryptoGraphs(industry, tickers, names):
+def historicalCryptoGraphs(title, currencies, names):
     return html.Div(children=[
-            html.H1(children=industry, style={"textAlign": "center"}),
-            html.Table(children=[
-                html.Tbody(
-                    children=[
-                        html.Tr(children=[
-                            html.Td(
-                                dcc.Graph(
-                                    figure=createHistCryptoStock(tickers[0], names[0])
-                                )
-                            ),
-                            html.Td(
-                                dcc.Graph(
-                                    figure=createHistCryptoStock(tickers[1], names[1])
-                                )
+        html.H1(children=title, style={"textAlign": "center"}),
+        html.Table(children=[
+            html.Tbody(
+                children=[
+                    html.Tr(children=[
+                        html.Td(
+                            dcc.Graph(
+                                figure=createHistCrypto(currencies[0], names[0])
                             )
-                        ],
                         ),
-                        html.Tr(children=[
-                            html.Td(
-                                dcc.Graph(
-                                    figure=createHistCryptoStock(tickers[2], names[2])
-                                )
-                            ),
-                            html.Td(
-                                dcc.Graph(
-                                    figure=createHistCryptoStock(tickers[3], names[3])
-                                )
+                        html.Td(
+                            dcc.Graph(
+                                figure=createHistCrypto(currencies[1], names[1])
                             )
-                        ],
-                        ),
+                        )
                     ],
-                ),
-
-            ], style={"width": "100%", "tableLayout": "fixed"}
+                    ),
+                    html.Tr(children=[
+                        html.Td(
+                            dcc.Graph(
+                                figure=createHistCrypto(currencies[2], names[2])
+                            )
+                        ),
+                        html.Td(
+                            dcc.Graph(
+                                figure=createHistCrypto(currencies[3], names[3])
+                            )
+                        )
+                    ],
+                    ),
+                ],
             ),
-        ]
-        )
 
+        ], style={"width": "100%", "tableLayout": "fixed"}
+        ),
+    ]
+    )
 
 
 @app.callback(Output("page-content", "children"), [Input("url", "pathname")])
@@ -585,54 +682,77 @@ def render_page_content(pathname):
             html.Div(id='finance-live'),
             dcc.Interval(
                 id='interval-component',
-                interval=60*1000,
+                interval=60 * 1000,
                 n_intervals=0
             )
         ])
 
     if pathname == "/page-1/2":
+        return historicalStockGraphs('Finance', ['V', 'JPM', 'BAC', 'MA'],
+                                     ['VISA', 'JPMorgan Chase', 'Bank of America', 'Mastercard'])
+
+    if pathname == "/page-1/3":
+        return html.P("Page 1.3")
+
+    if pathname == "/page-2/1":
         return html.Div([
             html.Div(id='manufacturing-live'),
             dcc.Interval(
                 id='interval-component',
-                interval=60*1000,
+                interval=60 * 1000,
                 n_intervals=0
             )
         ])
 
-    if pathname == "/page-1/3":
+    if pathname == "/page-2/2":
+        return historicalStockGraphs('Manufacturing', ['AAPL', 'MSFT', 'MGPI', 'KWR'],
+                                     ['Apple', 'Microsoft', 'MGP Ingredients Inc', 'Quaker Chemical Corp'])
+
+    if pathname == "/page-2/3":
+        return html.P("Page 2.3")
+
+    if pathname == "/page-3/1":
         return html.Div([
             html.Div(id='information-live'),
             dcc.Interval(
                 id='interval-component',
-                interval=60*1000,
+                interval=60 * 1000,
                 n_intervals=0
             )
         ])
 
-    if pathname == "/page-1/4":
+    if pathname == "/page-3/2":
+        return historicalStockGraphs('Information', ['CMCSA', 'VZ', 'T', 'TMUS'],
+                                     ['Comcast', 'Verizon', 'AT&T', 'T-Mobile'])
+
+    if pathname == "/page-3/3":
+        return html.P("Page 3.3")
+
+    if pathname == "/page-4/1":
         return html.Div([
             html.Div(id='retail-live'),
             dcc.Interval(
                 id='interval-component',
-                interval=60*1000,
+                interval=60 * 1000,
                 n_intervals=0
             )
         ])
 
-    elif pathname == "/page-2/1":
-        return historicalStockGraphs('Finance', ['V', 'JPM', 'BAC', 'MA'], ['VISA', 'JPMorgan Chase', 'Bank of America', 'Mastercard'])
-    elif pathname == "/page-2/2":
-        return historicalStockGraphs('Manufacturing', ['AAPL', 'MSFT', 'MGPI', 'KWR'], ['Apple', 'Microsoft', 'MGP Ingredients Inc', 'Quaker Chemical Corp'])
-    elif pathname == "/page-2/3":
-        return historicalStockGraphs('Information', ['CMCSA', 'VZ', 'T', 'TMUS'], ['Comcast', 'Verizon', 'AT&T', 'T-Mobile'])
-    elif pathname == "/page-2/4":
-        return historicalStockGraphs('Retail', ['AMZN', 'WMT', 'HD', 'COST'], ['Amazon', 'Walmart', 'Home Depot', 'Costco'])
-    elif pathname == "/page-3/1":
-        return historicalCryptoGraphs('Historical Crypto Stocks', ['BTC', 'ETH', 'LTC', 'DOGE'], ['Bitcoin', 'Ethereum', 'Litecoin', 'Dogecoin'])
-    # elif pathname == "/page-3/2":
-    #     return html.P("This is page 3.2")
-    elif pathname == "/page-4/1":
+    if pathname == "/page-4/2":
+        return historicalStockGraphs('Retail', ['AMZN', 'WMT', 'HD', 'COST'],
+                                     ['Amazon', 'Walmart', 'Home Depot', 'Costco'])
+
+    if pathname == "/page-4/3":
+        return html.P("Page 4.3")
+
+    if pathname == "/page-5/1":
+        return historicalCryptoGraphs('Cryptocurrencies', ['BTC', 'DOGE', 'ETH', 'LTC'],
+                                      ['Bitcoin', 'Dogecoin', 'Ethereum', 'Litecoin'])
+
+    if pathname == "/page-5/2":
+        return html.P("Crypto vs. Stocks")
+
+    if pathname == "/page-6/1":
         return html.Div(children=[
             html.H1(children='Machine Learning', style={"textAlign": "center"}),
             html.Hr(),
@@ -668,8 +788,9 @@ def render_page_content(pathname):
             )
         ])
 
-    elif pathname == "/page-4/2":
-        return html.P("This is page 4.2")
+    if pathname == "/page-6/2":
+        return html.P("Page 6.2")
+
     return dbc.Jumbotron(
         [
             html.H1("404: Not Found", className="text-danger"),
