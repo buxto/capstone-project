@@ -38,6 +38,7 @@ def getData(table):
     df = pd.read_sql(query, conn)
     return df
 
+
 def createHistStock(ticker, title):
     server = "gen10-data-fundamentals-21-11-sql-server.database.windows.net"
     table = "dbo.hstock"
@@ -53,6 +54,21 @@ def createHistStock(ticker, title):
 
     return fig
 
+
+def createHistCryptoStock(currency, title):
+    server = "gen10-data-fundamentals-21-11-sql-server.database.windows.net"
+    table = "dbo.hcrypto"
+    try:
+        conn1 = pymssql.connect(server, username, password, database)
+    except Exception as e:
+        print(e)
+
+    df = getData(table)
+    df2 = df[df["Currency"] == currency]
+    df2.sort_values(by=['Date'], inplace=True)
+    fig = px.line(df2, x="Date", y="Open", title=f"{title} ({currency})")
+
+    return fig
 
 def createFig(table, ticker, title):
     df = getData(table)
@@ -247,8 +263,8 @@ submenu_3 = [
     ),
     dbc.Collapse(
         [
-            dbc.NavLink("Page 3.1", href="/page-3/1"),
-            dbc.NavLink("Page 3.2", href="/page-3/2"),
+            dbc.NavLink("Crypto Stocks", href="/page-3/1"),
+            # dbc.NavLink("Page 3.2", href="/page-3/2"),
         ],
         id="submenu-3-collapse",
     ),
@@ -478,6 +494,7 @@ def update_retail(n):
         )
     ]
 
+
 def historicalStockGraphs(industry, tickers, names):
     return html.Div(children=[
             html.H1(children=industry, style={"textAlign": "center"}),
@@ -517,6 +534,49 @@ def historicalStockGraphs(industry, tickers, names):
             ),
         ]
         )
+
+
+def historicalCryptoGraphs(industry, tickers, names):
+    return html.Div(children=[
+            html.H1(children=industry, style={"textAlign": "center"}),
+            html.Table(children=[
+                html.Tbody(
+                    children=[
+                        html.Tr(children=[
+                            html.Td(
+                                dcc.Graph(
+                                    figure=createHistCryptoStock(tickers[0], names[0])
+                                )
+                            ),
+                            html.Td(
+                                dcc.Graph(
+                                    figure=createHistCryptoStock(tickers[1], names[1])
+                                )
+                            )
+                        ],
+                        ),
+                        html.Tr(children=[
+                            html.Td(
+                                dcc.Graph(
+                                    figure=createHistCryptoStock(tickers[2], names[2])
+                                )
+                            ),
+                            html.Td(
+                                dcc.Graph(
+                                    figure=createHistCryptoStock(tickers[3], names[3])
+                                )
+                            )
+                        ],
+                        ),
+                    ],
+                ),
+
+            ], style={"width": "100%", "tableLayout": "fixed"}
+            ),
+        ]
+        )
+
+
 
 @app.callback(Output("page-content", "children"), [Input("url", "pathname")])
 def render_page_content(pathname):
@@ -561,17 +621,17 @@ def render_page_content(pathname):
         ])
 
     elif pathname == "/page-2/1":
-        return historicalStockGraphs('Finance', ['V', 'JPM', 'BAC', 'MA'], ['VISA', 'JPMorgan Chase', 'Bank of America','Mastercard'])
+        return historicalStockGraphs('Finance', ['V', 'JPM', 'BAC', 'MA'], ['VISA', 'JPMorgan Chase', 'Bank of America', 'Mastercard'])
     elif pathname == "/page-2/2":
-        return historicalStockGraphs('Manufacturing', ['AAPL', 'MSFT', 'MGPI', 'KWR'], ['Apple', 'Microsoft', 'MGP Ingredients Inc','Quaker Chemical Corp'])
+        return historicalStockGraphs('Manufacturing', ['AAPL', 'MSFT', 'MGPI', 'KWR'], ['Apple', 'Microsoft', 'MGP Ingredients Inc', 'Quaker Chemical Corp'])
     elif pathname == "/page-2/3":
-        return historicalStockGraphs('Information', ['CMCSA', 'VZ', 'T', 'TMUS'], ['Comcast', 'Verizon', 'AT&T','T-Mobile'])
+        return historicalStockGraphs('Information', ['CMCSA', 'VZ', 'T', 'TMUS'], ['Comcast', 'Verizon', 'AT&T', 'T-Mobile'])
     elif pathname == "/page-2/4":
-        return historicalStockGraphs('Retail', ['AMZN', 'WMT', 'HD', 'COST'], ['Amazon', 'Walmart', 'Home Depot','Costco'])
+        return historicalStockGraphs('Retail', ['AMZN', 'WMT', 'HD', 'COST'], ['Amazon', 'Walmart', 'Home Depot', 'Costco'])
     elif pathname == "/page-3/1":
-        return html.P("This is page 3.1")
-    elif pathname == "/page-3/2":
-        return html.P("This is page 3.2")
+        return historicalCryptoGraphs('Historical Crypto Stocks', ['BTC', 'ETH', 'LTC', 'DOGE'], ['Bitcoin', 'Ethereum', 'Litecoin', 'Dogecoin'])
+    # elif pathname == "/page-3/2":
+    #     return html.P("This is page 3.2")
     elif pathname == "/page-4/1":
         return html.Div(children=[
             html.H1(children='Machine Learning', style={"textAlign": "center"}),
