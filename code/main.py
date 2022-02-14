@@ -180,7 +180,15 @@ def createFigArima():
     fig.add_trace(go.Scatter(y=plot_df['predictions'],
                              mode='lines+markers',
                              name='Predictions'))
-
+    fig.update_layout(
+        title="AAPL Arima Model Predictions",
+        xaxis_title="",
+        yaxis_title="Price",
+        legend_title="",
+        font=dict(
+            size=18,
+        )
+    )
     return fig
 
 
@@ -233,9 +241,133 @@ def createFigAutoReg():
                              mode='lines+markers',
                              name='Predictions'))
 
-
+    fig.update_layout(
+        title="AAPL Autoregressive Model Predictions",
+        xaxis_title="",
+        yaxis_title="Price",
+        legend_title="",
+        font=dict(
+            size=18,
+        )
+    )
     return fig
 
+
+def createFigAutoRegCrypto():
+    server = "gen10-data-fundamentals-21-11-sql-server.database.windows.net"
+    table = "dbo.hcrypto"
+    try:
+        # print(f"server {server}, username {username}, password {password}, database {database}")
+        conn1 = pymssql.connect(server, username, password, database)
+    except Exception as e:
+        print(e)
+
+    cursor = conn1.cursor()
+    query = f"SELECT * FROM {table}"
+    hcr_df = pd.read_sql(query, conn)
+
+    btc_df = hcr_df[hcr_df['Currency'] == 'BTC']
+    btc_df = btc_df.drop(columns='Currency')
+    btc_df['Date'] = pd.to_datetime(btc_df['Date'], format='%Y-%m-%d')
+    btc_df.sort_values('Date', inplace=True)
+    btc_df.reset_index(drop=True, inplace=True)
+
+    m_df = btc_df.drop(columns=['Date', 'Open', 'Close', 'Low', 'Volume', 'Market Cap'])
+
+    ar_train_data = m_df.iloc[:-15]
+    ar_test_data = m_df.iloc[-15:]
+
+    try:
+        res = load(r'crautoreg.model')
+    except Exception as e:
+        print(e)
+
+    new_dates = [m_df.index[-1] + x for x in range(1, 11)]
+    df_pred = pd.DataFrame(index=new_dates, columns=m_df.columns)
+
+    ar_df = pd.concat([m_df, df_pred])
+
+    # start at the end of original data, go til the end of this new dataframe
+    ar_df['predictions'] = res.predict(start=ar_train_data.shape[0], end=ar_df.shape[0])
+
+    # High contrast plot of price versus predictions for future highs
+    plot_df = ar_df.iloc[ar_train_data.shape[0]:ar_train_data.shape[0] + 5]
+
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(y=plot_df['High'],
+                             mode='lines+markers',
+                             name='High'))
+    fig.add_trace(go.Scatter(y=plot_df['predictions'],
+                             mode='lines+markers',
+                             name='Predictions'))
+
+    fig.update_layout(
+        title="BTC Autoregressive Model Predictions",
+        xaxis_title="",
+        yaxis_title="Price",
+        legend_title="",
+        font=dict(
+            size=18,
+        )
+    )
+    return fig
+
+
+def createFigArimaCrypto():
+    server = "gen10-data-fundamentals-21-11-sql-server.database.windows.net"
+    table = "dbo.hcrypto"
+    try:
+        # print(f"server {server}, username {username}, password {password}, database {database}")
+        conn1 = pymssql.connect(server, username, password, database)
+    except Exception as e:
+        print(e)
+
+    cursor = conn1.cursor()
+    query = f"SELECT * FROM {table}"
+    hcr_df = pd.read_sql(query, conn)
+
+    btc_df = hcr_df[hcr_df['Currency'] == 'BTC']
+    btc_df = btc_df.drop(columns='Currency')
+    btc_df['Date'] = pd.to_datetime(btc_df['Date'], format='%Y-%m-%d')
+    btc_df.sort_values('Date', inplace=True)
+    btc_df.reset_index(drop=True, inplace=True)
+
+    m_df = btc_df.drop(columns=['Date', 'Open', 'Close', 'Low', 'Volume', 'Market Cap'])
+
+    ar_test_data = m_df.iloc[-15:]
+    ar_train_data = m_df.iloc[:-15]
+
+    try:
+        arima_mdl = load(r'crarima.model')
+    except Exception as e:
+        print(e)
+
+    new_dates = [m_df.index[-1] + x for x in range(1, 11)]
+    df_pred = pd.DataFrame(index=new_dates, columns=m_df.columns)
+    arima_df = pd.concat([m_df, df_pred])
+    arima_df['predictions'] = arima_mdl.predict(start=ar_train_data.shape[0], end=arima_df.shape[0])
+
+
+    # Plotting
+    plot_df = arima_df.iloc[ar_train_data.shape[0]:ar_train_data.shape[0] + 5]
+
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(y=plot_df['High'],
+                             mode='lines+markers',
+                             name='High'))
+    fig.add_trace(go.Scatter(y=plot_df['predictions'],
+                             mode='lines+markers',
+                             name='Predictions'))
+    fig.update_layout(
+        title="BTC Arima Model Predictions",
+        xaxis_title="",
+        yaxis_title="Price",
+        legend_title="",
+        font=dict(
+            size=18,
+        )
+    )
+    return fig
 
 # -----------------------------------------------------------------------
 
@@ -465,7 +597,6 @@ for i in range(1, 7):
 def update_finance(n):
     return [
         html.H1(children='Finance', style={"textAlign": "center"}),
-        html.H4(children='Live data', style={"textAlign": "center"}),
         html.Table(
             children=[
                 html.Tbody(children=[
@@ -505,7 +636,6 @@ def update_finance(n):
 def update_manufacturing(n):
     return [
         html.H1(children='Manufacturing', style={"textAlign": "center"}),
-        html.H4(children='Live data', style={"textAlign": "center"}),
         html.Table(
             children=[
                 html.Tbody(children=[
@@ -546,7 +676,6 @@ def update_manufacturing(n):
 def update_information(n):
     return [
         html.H1(children='Information', style={"textAlign": "center"}),
-        html.H4(children='Live data', style={"textAlign": "center"}),
         html.Table(
             children=[
                 html.Tbody(children=[
@@ -586,7 +715,6 @@ def update_information(n):
 def update_retail(n):
     return [
         html.H1(children='Retail', style={"textAlign": "center"}),
-        html.H4(children='Live data', style={"textAlign": "center"}),
         html.Table(
             children=[
                 html.Tbody(children=[
@@ -625,7 +753,6 @@ def update_retail(n):
 def historicalStockGraphs(industry, tickers, names):
     return html.Div(children=[
         html.H1(children=industry, style={"textAlign": "center"}),
-        html.H4(children='September 21, 2021 - present', style={"textAlign": "center"}),
         html.Table(children=[
             html.Tbody(
                 children=[
@@ -667,7 +794,6 @@ def historicalStockGraphs(industry, tickers, names):
 def historicalCryptoGraphs(title, currencies, names):
     return html.Div(children=[
         html.H1(children=title, style={"textAlign": "center"}),
-        html.H4(children='September 21, 2021 - present', style={"textAlign": "center"}),
         html.Table(children=[
             html.Tbody(
                 children=[
@@ -792,10 +918,10 @@ def render_page_content(pathname):
                     html.Tbody(children=[
                         html.Tr(children=[
                             html.Td(
-                                html.H4(children='AutoReg Model', style={"textAlign": "center"}),
+                                html.H4(children='', style={"textAlign": "center"}),
                             ),
                             html.Td(
-                                html.H4(children='Arima Model', style={"textAlign": "center"}),
+                                html.H4(children='', style={"textAlign": "center"}),
                             )
                         ]),
                         html.Tr(children=[
@@ -820,7 +946,40 @@ def render_page_content(pathname):
         ])
 
     if pathname == "/page-6/2":
-        return html.P("Page 6.2")
+        return html.Div(children=[
+            html.H1(children='Machine Learning', style={"textAlign": "center"}),
+            html.Hr(),
+            html.Div(
+                html.Table(children=[
+                    html.Tbody(children=[
+                        html.Tr(children=[
+                            html.Td(
+                                html.H4(children='', style={"textAlign": "center"}),
+                            ),
+                            html.Td(
+                                html.H4(children='', style={"textAlign": "center"}),
+                            )
+                        ]),
+                        html.Tr(children=[
+                            html.Td(
+                                dcc.Graph(
+                                    id="ml1 id",
+                                    figure=createFigAutoRegCrypto()
+                                ),
+                            ),
+                            html.Td(
+                                dcc.Graph(
+                                    id="ml1 id",
+                                    figure=createFigArimaCrypto()
+                                ),
+                            )
+                        ])
+
+                    ]),
+
+                ], style={"width": "100%", "tableLayout": "fixed"})
+            )
+        ])
 
     return dbc.Jumbotron(
         [
