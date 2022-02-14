@@ -688,8 +688,7 @@ def render_page_content(pathname):
         ])
 
     if pathname == "/page-1/2":
-        return historicalStockGraphs('Finance', ['V', 'JPM', 'BAC', 'MA'],
-                                     ['VISA', 'JPMorgan Chase', 'Bank of America', 'Mastercard'])
+        return historicalStockGraphs('Finance', ['V', 'JPM', 'BAC', 'MA'], ['VISA', 'JPMorgan Chase', 'Bank of America','Mastercard'])
 
     if pathname == "/page-1/3":
         return html.P("Page 1.3")
@@ -705,12 +704,11 @@ def render_page_content(pathname):
         ])
 
     if pathname == "/page-2/2":
-        return historicalStockGraphs('Manufacturing', ['AAPL', 'MSFT', 'MGPI', 'KWR'],
-                                     ['Apple', 'Microsoft', 'MGP Ingredients Inc', 'Quaker Chemical Corp'])
+        return historicalStockGraphs('Manufacturing', ['AAPL', 'MSFT', 'MGPI', 'KWR'], ['Apple', 'Microsoft', 'MGP Ingredients Inc','Quaker Chemical Corp'])
 
     if pathname == "/page-2/3":
         return html.P("Page 2.3")
-
+        
     if pathname == "/page-3/1":
         return html.Div([
             html.Div(id='information-live'),
