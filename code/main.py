@@ -53,6 +53,21 @@ def createHistStock(ticker, title):
 
     return fig
 
+def createHistCrypto(currency, title):
+    server = "gen10-data-fundamentals-21-11-sql-server.database.windows.net"
+    table = "dbo.hcrypto"
+    try:
+        conn1 = pymssql.connect(server, username, password, database)
+    except Exception as e:
+        print(e)
+
+    df = getData(table)
+    df2 = df[df["Currency"] == currency]
+    df2.sort_values(by=['Date'], inplace=True)
+    fig = px.line(df2, x="Date", y="Open", title=f"{title} ({currency})")
+
+    return fig
+
 
 def createFig(table, ticker, title):
     df = getData(table)
@@ -234,7 +249,7 @@ submenu_3 = [
     html.Li(
         dbc.Row(
             [
-                dbc.Col("Historical Crypto Data"),
+                dbc.Col("Cryptocurrency Data"),
                 dbc.Col(
                     html.I(className="fas fa-chevron-right me-3"),
                     width="auto",
@@ -247,8 +262,8 @@ submenu_3 = [
     ),
     dbc.Collapse(
         [
-            dbc.NavLink("Page 3.1", href="/page-3/1"),
-            dbc.NavLink("Page 3.2", href="/page-3/2"),
+            dbc.NavLink("Historical Data", href="/page-3/1"),
+            dbc.NavLink("Crypto vs. Stocks", href="/page-3/2"),
         ],
         id="submenu-3-collapse",
     ),
@@ -518,6 +533,46 @@ def historicalStockGraphs(industry, tickers, names):
         ]
         )
 
+def historicalCryptoGraphs(title, currencies, names):
+    return html.Div(children=[
+            html.H1(children=title, style={"textAlign": "center"}),
+            html.Table(children=[
+                html.Tbody(
+                    children=[
+                        html.Tr(children=[
+                            html.Td(
+                                dcc.Graph(
+                                    figure=createHistCrypto(currencies[0], names[0])
+                                )
+                            ),
+                            html.Td(
+                                dcc.Graph(
+                                    figure=createHistCrypto(currencies[1], names[1])
+                                )
+                            )
+                        ],
+                        ),
+                        html.Tr(children=[
+                            html.Td(
+                                dcc.Graph(
+                                    figure=createHistCrypto(currencies[2], names[2])
+                                )
+                            ),
+                            html.Td(
+                                dcc.Graph(
+                                    figure=createHistCrypto(currencies[3], names[3])
+                                )
+                            )
+                        ],
+                        ),
+                    ],
+                ),
+
+            ], style={"width": "100%", "tableLayout": "fixed"}
+            ),
+        ]
+        )
+
 @app.callback(Output("page-content", "children"), [Input("url", "pathname")])
 def render_page_content(pathname):
     if pathname in ["/", "/page-1/1"]:
@@ -569,7 +624,7 @@ def render_page_content(pathname):
     elif pathname == "/page-2/4":
         return historicalStockGraphs('Retail', ['AMZN', 'WMT', 'HD', 'COST'], ['Amazon', 'Walmart', 'Home Depot','Costco'])
     elif pathname == "/page-3/1":
-        return html.P("This is page 3.1")
+        return historicalCryptoGraphs('Cryptocurrencies', ['BTC', 'DOGE', 'ETH', 'LTC'], ['Bitcoin', 'Dogecoin', 'Ethereum','Litecoin'])
     elif pathname == "/page-3/2":
         return html.P("This is page 3.2")
     elif pathname == "/page-4/1":
