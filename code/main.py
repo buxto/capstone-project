@@ -177,16 +177,16 @@ SIDEBAR_STYLE = {
     "top": 0,
     "left": 0,
     "bottom": 0,
-    "width": "16rem",
+    "width": "17rem",
     "padding": "2rem 1rem",
     "backgroundColor": "#f8f9fa",
+    "overflow-y": "scroll"
 }
 # The styles for the main contnet position it to the rigth of the sidebar and add some padding
 CONTENT_STYLE = {
     "marginLeft": "18rem",
     "marginRight": "2rem",
     "padding": "2rem 1rem",
-    "overflowX": "scroll"
 }
 
 submenu_1 = [
@@ -194,7 +194,7 @@ submenu_1 = [
         # use Row and Col components to postion the chevrons
         dbc.Row(
             [
-                dbc.Col("Live Stock Data"),
+                dbc.Col("Finance Industry"),
                 dbc.Col(
                     html.I(className="fas fa-chevron-right me-3"),
                     width="auto",
@@ -208,10 +208,9 @@ submenu_1 = [
     # we use the collapse component to hide and reveal the navigation links
     dbc.Collapse(
         [
-            dbc.NavLink("Finance", href="/page-1/1"),
-            dbc.NavLink("Manufacturing", href="/page-1/2"),
-            dbc.NavLink("Information", href="/page-1/3"),
-            dbc.NavLink("Retail", href="/page-1/4"),
+            dbc.NavLink("Live Stock Data", href="/page-1/1"),
+            dbc.NavLink("Historical Stock Data", href="/page-1/2"),
+            dbc.NavLink("Industry Data", href="/page-1/3")
         ],
         id="submenu-1-collapse",
     ),
@@ -222,7 +221,7 @@ submenu_2 = [
         # use Row and Col components to postion the chevrons
         dbc.Row(
             [
-                dbc.Col("Historical Stock Data"),
+                dbc.Col("Manufacturing Industry"),
                 dbc.Col(
                     html.I(className="fas fa-chevron-right me-3"),
                     width="auto",
@@ -236,10 +235,9 @@ submenu_2 = [
     # we use the collapse component to hide and reveal the navigation links
     dbc.Collapse(
         [
-            dbc.NavLink("Finance", href="/page-2/1"),
-            dbc.NavLink("Manufacturing", href="/page-2/2"),
-            dbc.NavLink("Information", href="/page-2/3"),
-            dbc.NavLink("Retail", href="/page-2/4"),
+            dbc.NavLink("Live Stock Data", href="/page-2/1"),
+            dbc.NavLink("Historical Stock Data", href="/page-2/2"),
+            dbc.NavLink("Industry Data", href="/page-2/3")
         ],
         id="submenu-2-collapse",
     ),
@@ -249,7 +247,7 @@ submenu_3 = [
     html.Li(
         dbc.Row(
             [
-                dbc.Col("Cryptocurrency Data"),
+                dbc.Col("Information Industry"),
                 dbc.Col(
                     html.I(className="fas fa-chevron-right me-3"),
                     width="auto",
@@ -262,8 +260,9 @@ submenu_3 = [
     ),
     dbc.Collapse(
         [
-            dbc.NavLink("Historical Data", href="/page-3/1"),
-            dbc.NavLink("Crypto vs. Stocks", href="/page-3/2"),
+            dbc.NavLink("Live Stock Data", href="/page-3/1"),
+            dbc.NavLink("Historical Stock Data", href="/page-3/2"),
+            dbc.NavLink("Industry Data", href="/page-3/3")
         ],
         id="submenu-3-collapse",
     ),
@@ -273,7 +272,7 @@ submenu_4 = [
     html.Li(
         dbc.Row(
             [
-                dbc.Col("Machine Learning"),
+                dbc.Col("Retail Industry"),
                 dbc.Col(
                     html.I(className="fas fa-chevron-right me-3"),
                     width="auto",
@@ -286,10 +285,59 @@ submenu_4 = [
     ),
     dbc.Collapse(
         [
-            dbc.NavLink("Stocks", href="/page-4/1"),
-            dbc.NavLink("Cryptocurrency", href="/page-4/2"),
+            dbc.NavLink("Live Stock Data", href="/page-4/1"),
+            dbc.NavLink("Historical Stock Data", href="/page-4/2"),
+            dbc.NavLink("Industry Data", href="/page-4/3")
         ],
         id="submenu-4-collapse",
+    ),
+]
+
+submenu_5 = [
+    html.Li(
+        dbc.Row(
+            [
+                dbc.Col("Cryptocurrencies"),
+                dbc.Col(
+                    html.I(className="fas fa-chevron-right me-3"),
+                    width="auto",
+                ),
+            ],
+            className="my-1",
+        ),
+        style={"cursor": "pointer"},
+        id="submenu-5",
+    ),
+    dbc.Collapse(
+        [
+            dbc.NavLink("Historial Crypto Data", href="/page-5/1"),
+            dbc.NavLink("Crypto vs. Stocks", href="/page-5/2"),
+        ],
+        id="submenu-5-collapse",
+    ),
+]
+
+submenu_6 = [
+    html.Li(
+        dbc.Row(
+            [
+                dbc.Col("Machine Learning"),
+                dbc.Col(
+                    html.I(className="fas fa-chevron-right me-3"),
+                    width="auto",
+                ),
+            ],
+            className="my-1",
+        ),
+        style={"cursor": "pointer"},
+        id="submenu-6",
+    ),
+    dbc.Collapse(
+        [
+            dbc.NavLink("Stocks", href="/page-6/1"),
+            dbc.NavLink("Cryptocurrency", href="/page-6/2"),
+        ],
+        id="submenu-6-collapse",
     ),
 ]
 
@@ -300,7 +348,7 @@ sidebar = html.Div(
         html.P(
             "Subtitle (TBD)", className="lead"
         ),
-        dbc.Nav(submenu_1 + submenu_2 + submenu_3 + submenu_4, vertical=True),
+        dbc.Nav(submenu_1 + submenu_2 + submenu_3 + submenu_4 + submenu_5 + submenu_6, vertical=True),
     ],
     style=SIDEBAR_STYLE,
     id="sidebar",
@@ -324,7 +372,7 @@ def set_navitem_class(is_open):
     return ""
 
 
-for i in range(1, 5):
+for i in range(1, 7):
     app.callback(
         Output(f"submenu-{i}-collapse", "is_open"),
         [Input(f"submenu-{i}", "n_clicks")],
@@ -586,6 +634,12 @@ def render_page_content(pathname):
         ])
 
     if pathname == "/page-1/2":
+        return historicalStockGraphs('Finance', ['V', 'JPM', 'BAC', 'MA'], ['VISA', 'JPMorgan Chase', 'Bank of America','Mastercard'])
+
+    if pathname == "/page-1/3":
+        return html.P("Page 1.3")
+
+    if pathname == "/page-2/1":
         return html.Div([
             html.Div(id='manufacturing-live'),
             dcc.Interval(
@@ -595,7 +649,13 @@ def render_page_content(pathname):
             )
         ])
 
-    if pathname == "/page-1/3":
+    if pathname == "/page-2/2":
+        return historicalStockGraphs('Manufacturing', ['AAPL', 'MSFT', 'MGPI', 'KWR'], ['Apple', 'Microsoft', 'MGP Ingredients Inc','Quaker Chemical Corp'])
+
+    if pathname == "/page-2/3":
+        return html.P("Page 2.3")
+        
+    if pathname == "/page-3/1":
         return html.Div([
             html.Div(id='information-live'),
             dcc.Interval(
@@ -605,7 +665,13 @@ def render_page_content(pathname):
             )
         ])
 
-    if pathname == "/page-1/4":
+    if pathname == "/page-3/2":
+        return historicalStockGraphs('Information', ['CMCSA', 'VZ', 'T', 'TMUS'], ['Comcast', 'Verizon', 'AT&T','T-Mobile'])
+
+    if pathname == "/page-3/3":
+        return html.P("Page 3.3")
+
+    if pathname == "/page-4/1":
         return html.Div([
             html.Div(id='retail-live'),
             dcc.Interval(
@@ -615,19 +681,19 @@ def render_page_content(pathname):
             )
         ])
 
-    elif pathname == "/page-2/1":
-        return historicalStockGraphs('Finance', ['V', 'JPM', 'BAC', 'MA'], ['VISA', 'JPMorgan Chase', 'Bank of America','Mastercard'])
-    elif pathname == "/page-2/2":
-        return historicalStockGraphs('Manufacturing', ['AAPL', 'MSFT', 'MGPI', 'KWR'], ['Apple', 'Microsoft', 'MGP Ingredients Inc','Quaker Chemical Corp'])
-    elif pathname == "/page-2/3":
-        return historicalStockGraphs('Information', ['CMCSA', 'VZ', 'T', 'TMUS'], ['Comcast', 'Verizon', 'AT&T','T-Mobile'])
-    elif pathname == "/page-2/4":
+    if pathname == "/page-4/2":
         return historicalStockGraphs('Retail', ['AMZN', 'WMT', 'HD', 'COST'], ['Amazon', 'Walmart', 'Home Depot','Costco'])
-    elif pathname == "/page-3/1":
+    
+    if pathname == "/page-4/3":
+        return html.P("Page 4.3")
+    
+    if pathname == "/page-5/1":
         return historicalCryptoGraphs('Cryptocurrencies', ['BTC', 'DOGE', 'ETH', 'LTC'], ['Bitcoin', 'Dogecoin', 'Ethereum','Litecoin'])
-    elif pathname == "/page-3/2":
-        return html.P("This is page 3.2")
-    elif pathname == "/page-4/1":
+    
+    if pathname == "/page-5/2":
+        return html.P("Crypto vs. Stocks")
+    
+    if pathname == "/page-6/1":
         return html.Div(children=[
             html.H1(children='Machine Learning', style={"textAlign": "center"}),
             html.Hr(),
@@ -662,9 +728,10 @@ def render_page_content(pathname):
                 ], style={"width": "100%", "tableLayout": "fixed"})
             )
         ])
-
-    elif pathname == "/page-4/2":
-        return html.P("This is page 4.2")
+    
+    if pathname == "/page-6/2":
+        return html.P("Page 6.2")
+        
     return dbc.Jumbotron(
         [
             html.H1("404: Not Found", className="text-danger"),
