@@ -443,6 +443,7 @@ for i in range(1, 7):
 def update_finance(n):
     return [
         html.H1(children='Finance', style={"textAlign": "center"}),
+        html.H4(children='Live data', style={"textAlign": "center"}),
         html.Table(
             children=[
                 html.Tbody(children=[
@@ -482,6 +483,7 @@ def update_finance(n):
 def update_manufacturing(n):
     return [
         html.H1(children='Manufacturing', style={"textAlign": "center"}),
+        html.H4(children='Live data', style={"textAlign": "center"}),
         html.Table(
             children=[
                 html.Tbody(children=[
@@ -522,6 +524,7 @@ def update_manufacturing(n):
 def update_information(n):
     return [
         html.H1(children='Information', style={"textAlign": "center"}),
+        html.H4(children='Live data', style={"textAlign": "center"}),
         html.Table(
             children=[
                 html.Tbody(children=[
@@ -561,6 +564,7 @@ def update_information(n):
 def update_retail(n):
     return [
         html.H1(children='Retail', style={"textAlign": "center"}),
+        html.H4(children='Live data', style={"textAlign": "center"}),
         html.Table(
             children=[
                 html.Tbody(children=[
@@ -599,6 +603,7 @@ def update_retail(n):
 def historicalStockGraphs(industry, tickers, names):
     return html.Div(children=[
         html.H1(children=industry, style={"textAlign": "center"}),
+        html.H4(children='September 21, 2021 - present', style={"textAlign": "center"}),
         html.Table(children=[
             html.Tbody(
                 children=[
@@ -640,6 +645,7 @@ def historicalStockGraphs(industry, tickers, names):
 def historicalCryptoGraphs(title, currencies, names):
     return html.Div(children=[
         html.H1(children=title, style={"textAlign": "center"}),
+        html.H4(children='September 21, 2021 - present', style={"textAlign": "center"}),
         html.Table(children=[
             html.Tbody(
                 children=[
