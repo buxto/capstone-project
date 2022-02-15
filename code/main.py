@@ -388,7 +388,7 @@ SIDEBAR_STYLE = {
     "width": "17rem",
     "padding": "2rem 1rem",
     "backgroundColor": "#f8f9fa",
-    "overflow-y": "scroll"
+    "overflowY": "scroll"
 }
 # The styles for the main contnet position it to the rigth of the sidebar and add some padding
 CONTENT_STYLE = {
@@ -398,7 +398,7 @@ CONTENT_STYLE = {
 }
 HOMELINK_STYLE = {
     "width": "17rem",
-    "font-size": "3rem"
+    "fontSize": "3rem"
 }
 
 
@@ -520,7 +520,6 @@ submenu_5 = [
     dbc.Collapse(
         [
             dbc.NavLink("Historial Crypto Data", href="/page-5/1"),
-            dbc.NavLink("Crypto vs. Stocks", href="/page-5/2"),
         ],
         id="submenu-5-collapse",
     ),
@@ -567,10 +566,8 @@ submenu_7 = [
     ),
     dbc.Collapse(
         [
-            dbc.NavLink("Finance", href="/page-7/1"),
-            dbc.NavLink("Manufacturing", href="/page-7/2"),
-            dbc.NavLink("Information", href="/page-7/3"),
-            dbc.NavLink("Retail", href="/page-7/4"),
+            dbc.NavLink("General", href="/page-7/1"),
+            dbc.NavLink("Sub-Categories", href="/page-7/2"),
         ],
         id="submenu-7-collapse",
     ),
@@ -586,9 +583,7 @@ sidebar = html.Div(
     [
         home_button,
         html.Hr(),
-        html.P(
-            "Subtitle (TBD)", className="lead"
-        ),
+
         dbc.Nav(submenu_1 + submenu_2 + submenu_3 + submenu_4 + submenu_5 + submenu_6 + submenu_7, vertical=True),
     ],
     style=SIDEBAR_STYLE,
@@ -932,7 +927,6 @@ def render_page_content(pathname):
         return historicalStockGraphs('Information', ['CMCSA', 'VZ', 'T', 'TMUS'],
                                      ['Comcast', 'Verizon', 'AT&T', 'T-Mobile'])
 
-
     if pathname == "/page-4/1":
         return html.Div([
             html.Div(id='retail-live'),
@@ -950,9 +944,6 @@ def render_page_content(pathname):
     if pathname == "/page-5/1":
         return historicalCryptoGraphs('Cryptocurrencies', ['BTC', 'DOGE', 'ETH', 'LTC'],
                                       ['Bitcoin', 'Dogecoin', 'Ethereum', 'Litecoin'])
-
-    if pathname == "/page-5/2":
-        return html.P("Crypto vs. Stocks")
 
     if pathname == "/page-6/1":
         return html.Div(children=[
@@ -1029,10 +1020,7 @@ def render_page_content(pathname):
         return html.P("Page 7.1")
     if pathname == "/page-7/2":
         return html.P("Page 7.2")
-    if pathname == "/page-7/3":
-        return html.P("Page 7.3")
-    if pathname == "/page-7/4":
-        return html.P("Page 7.4")
+
 
     return dbc.Jumbotron(
         [
