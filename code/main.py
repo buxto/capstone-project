@@ -366,14 +366,14 @@ SIDEBAR_STYLE = {
     "top": 0,
     "left": 0,
     "bottom": 0,
-    "width": "17rem",
+    "width": "20rem",
     "padding": "2rem 1rem",
     "backgroundColor": "#f8f9fa",
     "overflowY": "scroll"
 }
 # The styles for the main contnet position it to the rigth of the sidebar and add some padding
 CONTENT_STYLE = {
-    "marginLeft": "18rem",
+    "marginLeft": "21rem",
     "marginRight": "2rem",
     "padding": "2rem 1rem",
 }
@@ -606,6 +606,8 @@ for i in range(1, 8):
 def update_finance(n):
     return [
         html.H1(children='Finance', style={"textAlign": "center"}),
+        html.H4(children="Live data", style={"textAlign": "center"}),
+        html.Hr(),
         html.Table(
             children=[
                 html.Tbody(children=[
@@ -645,6 +647,8 @@ def update_finance(n):
 def update_manufacturing(n):
     return [
         html.H1(children='Manufacturing', style={"textAlign": "center"}),
+        html.H4(children="Live data", style={"textAlign": "center"}),
+        html.Hr(),
         html.Table(
             children=[
                 html.Tbody(children=[
@@ -685,6 +689,8 @@ def update_manufacturing(n):
 def update_information(n):
     return [
         html.H1(children='Information', style={"textAlign": "center"}),
+        html.H4(children="Live data", style={"textAlign": "center"}),
+        html.Hr(),
         html.Table(
             children=[
                 html.Tbody(children=[
@@ -724,6 +730,8 @@ def update_information(n):
 def update_retail(n):
     return [
         html.H1(children='Retail', style={"textAlign": "center"}),
+        html.H4(children="Live data", style={"textAlign": "center"}),
+        html.Hr(),
         html.Table(
             children=[
                 html.Tbody(children=[
@@ -762,6 +770,8 @@ def update_retail(n):
 def historicalStockGraphs(industry, tickers, names):
     return html.Div(children=[
         html.H1(children=industry, style={"textAlign": "center"}),
+        html.H4(children="Since September 21, 2021", style={"textAlign": "center"}),
+        html.Hr(),
         html.Table(children=[
             html.Tbody(
                 children=[
@@ -803,6 +813,8 @@ def historicalStockGraphs(industry, tickers, names):
 def historicalCryptoGraphs(title, currencies, names):
     return html.Div(children=[
         html.H1(children=title, style={"textAlign": "center"}),
+        html.H4(children="Since September 21, 2021", style={"textAlign": "center"}),
+        html.Hr(),
         html.Table(children=[
             html.Tbody(
                 children=[
@@ -843,7 +855,8 @@ def historicalCryptoGraphs(title, currencies, names):
 
 def industryData(table, data):
     return html.Div(children=[
-        html.H2(children="Industry Data", style={"textAlign": "center"}),
+        html.H1(children="Industry Data", style={"textAlign": "center"}),
+        html.Hr(),
         html.Table(children=[
             html.Tbody(
                 children=[
@@ -877,8 +890,9 @@ def render_page_content(pathname):
 
     if pathname == "/":
         return html.Div([
-            html.H1(children="Stocks vs. Cryptocurrencies", style={"textAlign": "center", "marginBottom": "50px"}),
-            html.P("This dashboard visualizes live streaming data on 16 differents stocks in 4 different industries, as well as historical data for those stocks and 4 different cryptocurrencies. It also directly compares the performances of stocks and crypto and takes a look at machine learning predictions for each. Use the sidebar on the left to explore!"),
+            html.H1(children="Stocks vs. Cryptocurrencies", style={"textAlign": "center"}),
+            html.Hr(),
+            html.P(children="This dashboard visualizes live streaming data on 16 differents stocks in 4 different industries, as well as historical data for those stocks and 4 different cryptocurrencies. It also takes a look at machine learning predictions for stocks and crypto and shows economic data for the industries. Use the sidebar on the left to explore!", style={"marginTop": "50px"}),
             html.P(children="Our group:", style={"marginTop": "50px"}),
             html.Ul([
                 html.Li(html.A(children='Connor Buxton', href='https://www.linkedin.com/in/connor-buxton-748103181/', target='_blank')),
