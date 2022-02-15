@@ -553,7 +553,7 @@ submenu_6 = [
     ),
 ]
 home_button = html.Div(
-    dbc.NavLink("Title", href="/"),
+    dbc.NavLink("Home", href="/"),
     style=HOMELINK_STYLE,
 )
 sidebar = html.Div(
@@ -844,7 +844,18 @@ def historicalCryptoGraphs(title, currencies, names):
 def render_page_content(pathname):
 
     if pathname == "/":
-        return html.P("Home Page")
+        return html.Div([
+            html.H1(children="Stocks vs. Cryptocurrencies", style={"textAlign": "center", "marginBottom": "50px"}),
+            html.P("This dashboard visualizes live streaming data on 16 differents stocks in 4 different industries, as well as historical data for those stocks and 4 different cryptocurrencies. It also directly compares the performances of stocks and crypto and takes a look at machine learning predictions for each. Use the sidebar on the left to explore!"),
+            html.P(children="Our group:", style={"marginTop": "50px"}),
+            html.Ul([
+                html.Li(html.A(children='Connor Buxton', href='https://www.linkedin.com/in/connor-buxton-748103181/', target='_blank')),
+                html.Li(html.A(children='Ben Hines', href='https://www.linkedin.com/in/ben-hines-426286225/', target='_blank')),
+                html.Li(html.A(children='Sargis Abrahamyan', href='https://www.linkedin.com/in/sargis-abrahamyan-1333571a0/', target='_blank')),
+                html.Li(html.A(children='Lucas Stefanic', href='https://www.linkedin.com/in/lucas-stefanic-661404212/', target='_blank'))
+            ])
+        ], style={"font-size": "1.5em"}
+        )
 
     if pathname == "/page-1/1":
         return html.Div([
