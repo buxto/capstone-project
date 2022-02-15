@@ -395,6 +395,11 @@ CONTENT_STYLE = {
     "marginRight": "2rem",
     "padding": "2rem 1rem",
 }
+HOMELINK_STYLE = {
+    "width": "17rem",
+    "font-size": "3rem"
+}
+
 
 submenu_1 = [
     html.Li(
@@ -547,10 +552,13 @@ submenu_6 = [
         id="submenu-6-collapse",
     ),
 ]
-
+home_button = html.Div(
+    dbc.NavLink("Title", href="/"),
+    style=HOMELINK_STYLE,
+)
 sidebar = html.Div(
     [
-        html.H2("Title(TDB)", className="display-4"),
+        home_button,
         html.Hr(),
         html.P(
             "Subtitle (TBD)", className="lead"
@@ -834,7 +842,11 @@ def historicalCryptoGraphs(title, currencies, names):
 
 @app.callback(Output("page-content", "children"), [Input("url", "pathname")])
 def render_page_content(pathname):
-    if pathname in ["/", "/page-1/1"]:
+
+    if pathname == "/":
+        return html.P("Home Page")
+
+    if pathname == "/page-1/1":
         return html.Div([
             html.Div(id='finance-live'),
             dcc.Interval(
