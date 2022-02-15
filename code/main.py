@@ -31,10 +31,8 @@ conn = pymssql.connect(server, username, password, database)
 
 
 def getData(table):
-    # try:
-    #     conn = pymssql.connect(server, username, password, database)
-    # except Exception as e:
-    #     print(e)
+    server = "gen10-data-fundamentals-21-11-sql-server.database.windows.net"
+    conn = pymssql.connect(server, username, password, database)
     cursor = conn.cursor()
     query = f"SELECT * FROM {table}"
     df = pd.read_sql(query, conn)
@@ -82,7 +80,6 @@ def createHistStock(ticker, title):
     return fig
 
 
-
 def createHistCrypto(currency, title):
     server = "gen10-data-fundamentals-21-11-sql-server.database.windows.net"
     table = "dbo.hcrypto"
@@ -97,8 +94,6 @@ def createHistCrypto(currency, title):
 
     df2 = df2[df2['Date'] >= datetime(2021, 9, 21, 0, 0, 0, 0).date()]
 
-
-    pio.templates.default = "plotly_dark"
 
     fig = make_subplots(specs=[[{"secondary_y": True}]])
     # fig = px(df2, x="Date", y="Open", title=f"{title} ({ticker})")
@@ -181,7 +176,7 @@ def createFigArima():
                              mode='lines+markers',
                              name='Predictions'))
     fig.update_layout(
-        title="AAPL Arima Model Predictions",
+        title="AAPL ARIMA Model Predictions",
         xaxis_title="",
         yaxis_title="Price",
         legend_title="",
@@ -359,7 +354,7 @@ def createFigArimaCrypto():
                              mode='lines+markers',
                              name='Predictions'))
     fig.update_layout(
-        title="BTC Arima Model Predictions",
+        title="BTC ARIMA Model Predictions",
         xaxis_title="",
         yaxis_title="Price",
         legend_title="",
@@ -368,6 +363,12 @@ def createFigArimaCrypto():
         )
     )
     return fig
+
+
+def createIndustryGraph(table):
+
+    pass
+
 
 # -----------------------------------------------------------------------
 
@@ -422,7 +423,6 @@ submenu_1 = [
         [
             dbc.NavLink("Live Stock Data", href="/page-1/1"),
             dbc.NavLink("Historical Stock Data", href="/page-1/2"),
-            dbc.NavLink("Industry Data", href="/page-1/3")
         ],
         id="submenu-1-collapse",
     ),
@@ -449,7 +449,6 @@ submenu_2 = [
         [
             dbc.NavLink("Live Stock Data", href="/page-2/1"),
             dbc.NavLink("Historical Stock Data", href="/page-2/2"),
-            dbc.NavLink("Industry Data", href="/page-2/3")
         ],
         id="submenu-2-collapse",
     ),
@@ -474,7 +473,6 @@ submenu_3 = [
         [
             dbc.NavLink("Live Stock Data", href="/page-3/1"),
             dbc.NavLink("Historical Stock Data", href="/page-3/2"),
-            dbc.NavLink("Industry Data", href="/page-3/3")
         ],
         id="submenu-3-collapse",
     ),
@@ -499,7 +497,6 @@ submenu_4 = [
         [
             dbc.NavLink("Live Stock Data", href="/page-4/1"),
             dbc.NavLink("Historical Stock Data", href="/page-4/2"),
-            dbc.NavLink("Industry Data", href="/page-4/3")
         ],
         id="submenu-4-collapse",
     ),
@@ -552,10 +549,39 @@ submenu_6 = [
         id="submenu-6-collapse",
     ),
 ]
+
+submenu_7 = [
+    html.Li(
+        dbc.Row(
+            [
+                dbc.Col("Industry Data"),
+                dbc.Col(
+                    html.I(className="fas fa-chevron-right me-3"),
+                    width="auto",
+                ),
+            ],
+            className="my-1",
+        ),
+        style={"cursor": "pointer"},
+        id="submenu-7",
+    ),
+    dbc.Collapse(
+        [
+            dbc.NavLink("Finance", href="/page-7/1"),
+            dbc.NavLink("Manufacturing", href="/page-7/2"),
+            dbc.NavLink("Information", href="/page-7/3"),
+            dbc.NavLink("Retail", href="/page-7/4"),
+        ],
+        id="submenu-7-collapse",
+    ),
+]
+
 home_button = html.Div(
-    dbc.NavLink("Title", href="/"),
+    dbc.NavLink("Home", href="/"),
     style=HOMELINK_STYLE,
 )
+
+
 sidebar = html.Div(
     [
         home_button,
@@ -563,7 +589,7 @@ sidebar = html.Div(
         html.P(
             "Subtitle (TBD)", className="lead"
         ),
-        dbc.Nav(submenu_1 + submenu_2 + submenu_3 + submenu_4 + submenu_5 + submenu_6, vertical=True),
+        dbc.Nav(submenu_1 + submenu_2 + submenu_3 + submenu_4 + submenu_5 + submenu_6 + submenu_7, vertical=True),
     ],
     style=SIDEBAR_STYLE,
     id="sidebar",
@@ -580,7 +606,6 @@ def toggle_collapse(n, is_open):
         return not is_open
     return is_open
 
-
 # this function applies the "open" class to rotate the chevron
 def set_navitem_class(is_open):
     if is_open:
@@ -588,7 +613,7 @@ def set_navitem_class(is_open):
     return ""
 
 
-for i in range(1, 7):
+for i in range(1, 8):
     app.callback(
         Output(f"submenu-{i}-collapse", "is_open"),
         [Input(f"submenu-{i}", "n_clicks")],
@@ -839,12 +864,30 @@ def historicalCryptoGraphs(title, currencies, names):
     ]
     )
 
+def industryData():
+    return html.Div(children=[
+
+
+
+    ])
+
 
 @app.callback(Output("page-content", "children"), [Input("url", "pathname")])
 def render_page_content(pathname):
 
     if pathname == "/":
-        return html.P("Home Page")
+        return html.Div([
+            html.H1(children="Stocks vs. Cryptocurrencies", style={"textAlign": "center", "marginBottom": "50px"}),
+            html.P("This dashboard visualizes live streaming data on 16 differents stocks in 4 different industries, as well as historical data for those stocks and 4 different cryptocurrencies. It also directly compares the performances of stocks and crypto and takes a look at machine learning predictions for each. Use the sidebar on the left to explore!"),
+            html.P(children="Our group:", style={"marginTop": "50px"}),
+            html.Ul([
+                html.Li(html.A(children='Connor Buxton', href='https://www.linkedin.com/in/connor-buxton-748103181/', target='_blank')),
+                html.Li(html.A(children='Ben Hines', href='https://www.linkedin.com/in/ben-hines-426286225/', target='_blank')),
+                html.Li(html.A(children='Sargis Abrahamyan', href='https://www.linkedin.com/in/sargis-abrahamyan-1333571a0/', target='_blank')),
+                html.Li(html.A(children='Lucas Stefanic', href='https://www.linkedin.com/in/lucas-stefanic-661404212/', target='_blank'))
+            ])
+        ], style={"font-size": "1.5em"}
+        )
 
     if pathname == "/page-1/1":
         return html.Div([
@@ -860,8 +903,6 @@ def render_page_content(pathname):
         return historicalStockGraphs('Finance', ['V', 'JPM', 'BAC', 'MA'],
                                      ['VISA', 'JPMorgan Chase', 'Bank of America', 'Mastercard'])
 
-    if pathname == "/page-1/3":
-        return html.P("Page 1.3")
 
     if pathname == "/page-2/1":
         return html.Div([
@@ -877,9 +918,6 @@ def render_page_content(pathname):
         return historicalStockGraphs('Manufacturing', ['AAPL', 'MSFT', 'MGPI', 'KWR'],
                                      ['Apple', 'Microsoft', 'MGP Ingredients Inc', 'Quaker Chemical Corp'])
 
-    if pathname == "/page-2/3":
-        return html.P("Page 2.3")
-
     if pathname == "/page-3/1":
         return html.Div([
             html.Div(id='information-live'),
@@ -894,8 +932,6 @@ def render_page_content(pathname):
         return historicalStockGraphs('Information', ['CMCSA', 'VZ', 'T', 'TMUS'],
                                      ['Comcast', 'Verizon', 'AT&T', 'T-Mobile'])
 
-    if pathname == "/page-3/3":
-        return html.P("Page 3.3")
 
     if pathname == "/page-4/1":
         return html.Div([
@@ -910,9 +946,6 @@ def render_page_content(pathname):
     if pathname == "/page-4/2":
         return historicalStockGraphs('Retail', ['AMZN', 'WMT', 'HD', 'COST'],
                                      ['Amazon', 'Walmart', 'Home Depot', 'Costco'])
-
-    if pathname == "/page-4/3":
-        return html.P("Page 4.3")
 
     if pathname == "/page-5/1":
         return historicalCryptoGraphs('Cryptocurrencies', ['BTC', 'DOGE', 'ETH', 'LTC'],
@@ -992,6 +1025,14 @@ def render_page_content(pathname):
                 ], style={"width": "100%", "tableLayout": "fixed"})
             )
         ])
+    if pathname == "/page-7/1":
+        return html.P("Page 7.1")
+    if pathname == "/page-7/2":
+        return html.P("Page 7.2")
+    if pathname == "/page-7/3":
+        return html.P("Page 7.3")
+    if pathname == "/page-7/4":
+        return html.P("Page 7.4")
 
     return dbc.Jumbotron(
         [
