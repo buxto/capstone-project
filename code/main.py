@@ -40,12 +40,8 @@ def getData(table):
 
 
 def createHistStock(ticker, title):
-    server = "gen10-data-fundamentals-21-11-sql-server.database.windows.net"
+
     table = "dbo.hstock"
-    try:
-        conn1 = pymssql.connect(server, username, password, database)
-    except Exception as e:
-        print(e)
 
     df = getData(table)
     df2 = df[df["Ticker"] == ticker]
@@ -81,12 +77,8 @@ def createHistStock(ticker, title):
 
 
 def createHistCrypto(currency, title):
-    server = "gen10-data-fundamentals-21-11-sql-server.database.windows.net"
+
     table = "dbo.hcrypto"
-    try:
-        conn1 = pymssql.connect(server, username, password, database)
-    except Exception as e:
-        print(e)
 
     df = getData(table)
     df2 = df[df["Currency"] == currency]
@@ -131,16 +123,10 @@ def createFig(table, ticker, title):
 
 
 def createFigArima():
-    server = "gen10-data-fundamentals-21-11-sql-server.database.windows.net"
-    table = "dbo.hstock"
-    try:
-        conn1 = pymssql.connect(server, username, password, database)
-    except Exception as e:
-        print(e)
 
-    cursor = conn1.cursor()
-    query = f"SELECT * FROM {table}"
-    hst_df = pd.read_sql(query, conn1)
+    table = "dbo.hstock"
+
+    hst_df = getData(table)
 
     apple_df = hst_df[hst_df['Ticker'] == 'AAPL']
     apple_df = apple_df.drop(columns='Ticker')
@@ -188,17 +174,10 @@ def createFigArima():
 
 
 def createFigAutoReg():
-    server = "gen10-data-fundamentals-21-11-sql-server.database.windows.net"
-    table = "dbo.hstock"
-    try:
-        # print(f"server {server}, username {username}, password {password}, database {database}")
-        conn1 = pymssql.connect(server, username, password, database)
-    except Exception as e:
-        print(e)
 
-    cursor = conn1.cursor()
-    query = f"SELECT * FROM {table}"
-    hst_df = pd.read_sql(query, conn1)
+    table = "dbo.hstock"
+
+    hst_df = getData(table)
 
     apple_df = hst_df[hst_df['Ticker'] == 'AAPL']
     apple_df = apple_df.drop(columns='Ticker')
@@ -249,17 +228,10 @@ def createFigAutoReg():
 
 
 def createFigAutoRegCrypto():
-    server = "gen10-data-fundamentals-21-11-sql-server.database.windows.net"
-    table = "dbo.hcrypto"
-    try:
-        # print(f"server {server}, username {username}, password {password}, database {database}")
-        conn1 = pymssql.connect(server, username, password, database)
-    except Exception as e:
-        print(e)
 
-    cursor = conn1.cursor()
-    query = f"SELECT * FROM {table}"
-    hcr_df = pd.read_sql(query, conn)
+    table = "dbo.hcrypto"
+
+    hcr_df = getData(table)
 
     btc_df = hcr_df[hcr_df['Currency'] == 'BTC']
     btc_df = btc_df.drop(columns='Currency')
@@ -309,17 +281,10 @@ def createFigAutoRegCrypto():
 
 
 def createFigArimaCrypto():
-    server = "gen10-data-fundamentals-21-11-sql-server.database.windows.net"
-    table = "dbo.hcrypto"
-    try:
-        # print(f"server {server}, username {username}, password {password}, database {database}")
-        conn1 = pymssql.connect(server, username, password, database)
-    except Exception as e:
-        print(e)
 
-    cursor = conn1.cursor()
-    query = f"SELECT * FROM {table}"
-    hcr_df = pd.read_sql(query, conn)
+    table = "dbo.hcrypto"
+
+    hcr_df = getData(table)
 
     btc_df = hcr_df[hcr_df['Currency'] == 'BTC']
     btc_df = btc_df.drop(columns='Currency')
@@ -365,9 +330,25 @@ def createFigArimaCrypto():
     return fig
 
 
-def createIndustryGraph(table):
+def createIndustryGraph(table, x_axis, title, data):
+    # NAICS_Code_Meaning
+    # Number_of_Establishments
+    # Sales_Shipment_or_Revenue
 
-    pass
+    df = getData(table)
+    df["Number_of_Establishments"] = pd.to_numeric(df["Number_of_Establishments"])
+    df["Sales_Shipment_or_Revenue"] = pd.to_numeric(df["Sales_Shipment_or_Revenue"])
+
+    df2 = df[df["NAICS_Code_Meaning"].isin(data)]
+
+    fig = px.bar(df2, y="NAICS_Code_Meaning", x=x_axis, title=f"{title}", orientation='h',
+                 labels={
+                     "NAICS_Code_Meaning": "Industry",
+                     "Number_of_Establishments": "Number of Establishments",
+                     "Sales_Shipment_or_Revenue": "Sales Shipment or Revenue ($1000)"
+                 },
+                 )
+    return fig
 
 
 # -----------------------------------------------------------------------
@@ -567,7 +548,7 @@ submenu_7 = [
     dbc.Collapse(
         [
             dbc.NavLink("General", href="/page-7/1"),
-            dbc.NavLink("Sub-Categories", href="/page-7/2"),
+            dbc.NavLink("Subcategories", href="/page-7/2"),
         ],
         id="submenu-7-collapse",
     ),
@@ -859,12 +840,36 @@ def historicalCryptoGraphs(title, currencies, names):
     ]
     )
 
-def industryData():
+
+def industryData(table, data):
     return html.Div(children=[
+        html.H2(children="Industry Data", style={"textAlign": "center"}),
+        html.Table(children=[
+            html.Tbody(
+                children=[
+                    html.Tr(children=[
+                        html.Td(
+                            dcc.Graph(
+                                figure=createIndustryGraph(table, "Number_of_Establishments", "Number of Establishments by Industry Group", data)
+                            )
+                        ),
+                    ],
+                    ),
+                    html.Tr(children=[
+                        html.Td(
+                            dcc.Graph(
+                                figure=createIndustryGraph(table, "Sales_Shipment_or_Revenue", "Sales Shipment or Revenue by Industry Group", data)
+                            )
+                        ),
+                    ],
+                    ),
+                ],
+            ),
 
-
-
-    ])
+        ], style={"width": "100%", "tableLayout": "fixed"}
+        ),
+    ]
+    )
 
 
 @app.callback(Output("page-content", "children"), [Input("url", "pathname")])
@@ -1017,9 +1022,9 @@ def render_page_content(pathname):
             )
         ])
     if pathname == "/page-7/1":
-        return html.P("Page 7.1")
+        return industryData("dbo.census", ["Manufacturing", "Finance and insurance", "Retail trade", "Information"])
     if pathname == "/page-7/2":
-        return html.P("Page 7.2")
+        return industryData("dbo.census", ["Grain and oilseed milling", "Distilleries", "Electronic computer manufacturing", "Commercial banking", "Credit card issuing"])
 
 
     return dbc.Jumbotron(
