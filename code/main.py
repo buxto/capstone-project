@@ -46,7 +46,7 @@ def createHistStock(ticker, title):
             'paper_bgcolor': 'rgba(0, 0, 0, 0)'
         },
         title=f"{title} ({ticker})",
-        yaxis_title='Volume ($)',
+        yaxis_title='Volume',
 
     )
 
@@ -90,7 +90,7 @@ def createHistCrypto(currency, title):
         'paper_bgcolor': 'rgba(0, 0, 0, 0)'
         },
         title=f"{title} ({currency})",
-        yaxis_title='Volume ($)',
+        yaxis_title='Volume',
     )
     fig.add_trace(go.Candlestick(name="Price",
                                  x=df2['Date'],
