@@ -9,14 +9,7 @@ from joblib import dump, load
 from plotly.subplots import make_subplots
 import plotly.graph_objs as go
 from datetime import datetime
-import plotly.io as pio
-import plotly
-import matplotlib.pyplot as plt
-import joblib
-from statsmodels.tsa.arima.model import ARIMA
-from statsmodels.tsa.stattools import adfuller
-from statsmodels.tsa.ar_model import AutoReg as ar
-from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
+
 
 database = "group3-DB"
 table = "dbo.rtstock"
@@ -25,9 +18,6 @@ password = "K-qC4SoI_oUvepg"
 server = "gen10-data-fundamentals-21-11-sql-server.database.windows.net"
 
 conn = pymssql.connect(server, username, password, database)
-
-
-# table = "dbo.hstock"
 
 
 def getData(table):
@@ -49,12 +39,17 @@ def createHistStock(ticker, title):
 
     df2 = df2[df2['Date'] >= datetime(2021, 9, 21, 0, 0, 0, 0).date()]
     fig = make_subplots(specs=[[{"secondary_y": True}]])
-    fig.update_layout(title=f"{title} ({ticker})")
-    fig.update_layout({
-        'plot_bgcolor': 'rgba(0, 0, 0, 0)',
-        'paper_bgcolor': 'rgba(0, 0, 0, 0)'
-    })
-    # fig = px(df2, x="Date", y="Open", title=f"{title} ({ticker})")
+
+    fig.update_layout(
+        {
+            'plot_bgcolor': 'rgba(0, 0, 0, 0)',
+            'paper_bgcolor': 'rgba(0, 0, 0, 0)'
+        },
+        title=f"{title} ({ticker})",
+        yaxis_title='Volume ($)',
+
+    )
+
     fig.add_trace(go.Bar(name="Volume", x=df2['Date'], y=df2['Volume'], opacity=0.5), secondary_y=False)
 
     fig.add_trace(go.Candlestick(name="Price",
@@ -72,7 +67,7 @@ def createHistStock(ticker, title):
             dict(values=["2021-11-25", "2021-12-24", "2022-01-17"]),  # hide holidays
         ]
     )
-
+    fig.update_yaxes(title_text="Price ($)", secondary_y=True)
     return fig
 
 
@@ -88,13 +83,15 @@ def createHistCrypto(currency, title):
 
 
     fig = make_subplots(specs=[[{"secondary_y": True}]])
-    # fig = px(df2, x="Date", y="Open", title=f"{title} ({ticker})")
+
     fig.add_trace(go.Bar(name="Volume", x=df2['Date'], y=df2['Volume'], opacity=0.5), secondary_y=False)
-    fig.update_layout(title=f"{title} ({currency})")
     fig.update_layout({
         'plot_bgcolor': 'rgba(0, 0, 0, 0)',
         'paper_bgcolor': 'rgba(0, 0, 0, 0)'
-    })
+        },
+        title=f"{title} ({currency})",
+        yaxis_title='Volume ($)',
+    )
     fig.add_trace(go.Candlestick(name="Price",
                                  x=df2['Date'],
                                  open=df2['Open'],
@@ -110,6 +107,7 @@ def createHistCrypto(currency, title):
             dict(values=["2021-11-25", "2021-12-24", "2022-01-17"])  # hide holidays
         ]
     )
+    fig.update_yaxes(title_text="Price ($)", secondary_y=True)
     return fig
 
 
@@ -163,8 +161,8 @@ def createFigArima():
                              name='Predictions'))
     fig.update_layout(
         title="AAPL ARIMA Model Predictions",
-        xaxis_title="",
-        yaxis_title="Price",
+        xaxis_title="Date Index",
+        yaxis_title="Price ($)",
         legend_title="",
         font=dict(
             size=18,
@@ -217,8 +215,8 @@ def createFigAutoReg():
 
     fig.update_layout(
         title="AAPL Autoregressive Model Predictions",
-        xaxis_title="",
-        yaxis_title="Price",
+        xaxis_title="Date Index",
+        yaxis_title="Price ($)",
         legend_title="",
         font=dict(
             size=18,
@@ -270,8 +268,8 @@ def createFigAutoRegCrypto():
 
     fig.update_layout(
         title="BTC Autoregressive Model Predictions",
-        xaxis_title="",
-        yaxis_title="Price",
+        xaxis_title="Date Index",
+        yaxis_title="Price ($)",
         legend_title="",
         font=dict(
             size=18,
@@ -320,8 +318,8 @@ def createFigArimaCrypto():
                              name='Predictions'))
     fig.update_layout(
         title="BTC ARIMA Model Predictions",
-        xaxis_title="",
-        yaxis_title="Price",
+        xaxis_title="Date Index",
+        yaxis_title="Price ($)",
         legend_title="",
         font=dict(
             size=18,
@@ -331,9 +329,6 @@ def createFigArimaCrypto():
 
 
 def createIndustryGraph(table, x_axis, title, data):
-    # NAICS_Code_Meaning
-    # Number_of_Establishments
-    # Sales_Shipment_or_Revenue
 
     df = getData(table)
     df["Number_of_Establishments"] = pd.to_numeric(df["Number_of_Establishments"])
@@ -379,7 +374,7 @@ CONTENT_STYLE = {
 }
 HOMELINK_STYLE = {
     "width": "17rem",
-    "fontSize": "3rem"
+    "fontSize": "2.7rem",
 }
 
 
@@ -899,9 +894,26 @@ def render_page_content(pathname):
                 html.Li(html.A(children='Ben Hines', href='https://www.linkedin.com/in/ben-hines-426286225/', target='_blank')),
                 html.Li(html.A(children='Sargis Abrahamyan', href='https://www.linkedin.com/in/sargis-abrahamyan-1333571a0/', target='_blank')),
                 html.Li(html.A(children='Lucas Stefanic', href='https://www.linkedin.com/in/lucas-stefanic-661404212/', target='_blank'))
-            ])
+            ]),
+            html.Footer([
+                html.Div(["Data sources",
+                html.Div(html.A(children='Alpha Vantage API', href='https://www.alphavantage.co', target='_blank')),
+                html.Div(html.A(children='Finnhub Stock API', href='https://finnhub.io/', target='_blank')),
+                html.Div(html.A(children='US Economic Census', href='https://data.census.gov/cedsci/table?q=ECNNAPCSIND2017.EC1700NAPCSINDPRD ', target='_blank')),
+                ],
+
+                style={
+                    "position": "absolute",
+                    "bottom": "0",
+                    "right": "0",
+                    "margin": "1rem",
+                    "textAlign": "right",
+                    "font-size": "1rem",
+                }
+            )])
         ], style={"font-size": "1.5em"}
-        )
+    )
+
 
     if pathname == "/page-1/1":
         return html.Div([
@@ -968,7 +980,7 @@ def render_page_content(pathname):
         return html.Div(children=[
             html.H1(children='Machine Learning', style={"textAlign": "center"}),
             html.Hr(),
-            html.Div(
+            html.Div([
                 html.Table(children=[
                     html.Tbody(children=[
                         html.Tr(children=[
@@ -996,7 +1008,14 @@ def render_page_content(pathname):
 
                     ]),
 
-                ], style={"width": "100%", "tableLayout": "fixed"})
+                ], style={"width": "100%", "tableLayout": "fixed"}),
+                html.Div([
+                    html.Li("Grid Search was used to locate parameters which increase accuracy"),
+                    html.Li("Stock market and cryptocurrency data proved too volatile to provide the algorithms with a pattern to latch onto"),
+                    html.Li("Attempted to experiment with order hyperparameters, but no significant change in results"),
+                    ]
+                )
+            ]
             )
         ])
 
@@ -1004,7 +1023,7 @@ def render_page_content(pathname):
         return html.Div(children=[
             html.H1(children='Machine Learning', style={"textAlign": "center"}),
             html.Hr(),
-            html.Div(
+            html.Div([
                 html.Table(children=[
                     html.Tbody(children=[
                         html.Tr(children=[
@@ -1032,7 +1051,13 @@ def render_page_content(pathname):
 
                     ]),
 
-                ], style={"width": "100%", "tableLayout": "fixed"})
+                ], style={"width": "100%", "tableLayout": "fixed"}),
+                html.Div([
+                    html.Li("Grid Search was used to locate parameters which increase accuracy"),
+                    html.Li("Stock market and cryptocurrency data proved too volatile to provide the algorithms with a pattern to latch onto"),
+                    html.Li("Attempted to experiment with order hyperparameters, but no significant change in results"),
+                ])
+                ]
             )
         ])
     if pathname == "/page-7/1":
