@@ -979,6 +979,7 @@ def render_page_content(pathname):
     if pathname == "/page-6/1":
         return html.Div(children=[
             html.H1(children='Machine Learning', style={"textAlign": "center"}),
+            html.H4(children='Stocks', style={"textAlign": "center"}),
             html.Hr(),
             html.Div([
                 html.Table(children=[
@@ -1022,6 +1023,7 @@ def render_page_content(pathname):
     if pathname == "/page-6/2":
         return html.Div(children=[
             html.H1(children='Machine Learning', style={"textAlign": "center"}),
+            html.H4(children='Cryptocurrency', style={"textAlign": "center"}),
             html.Hr(),
             html.Div([
                 html.Table(children=[
