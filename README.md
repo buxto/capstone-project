@@ -28,7 +28,7 @@ The [project specifications](project-specifications) folder contains:
 - An [ERD](project-specifications/ERD.pdf) for our SQL database
 - Napkin drawings of our [visualizations](project-specifications/VisualizationsNapkinsAndFeedback.pdf) and our [dashboard layout](project-specifications/DashboardNapkinsAndFeedback.pdf)
 - An [ETL report](project-specifications/RepeatableETLReport.pdf)
-- A service diagram for our data pipelines (contained in [Data Platform.pdf](project-specifications/Data%20Platform.pdf))
+- A service diagram for our data pipelines (contained in [DataPlatform.pdf](project-specifications/DataPlatform.pdf))
 - The [project summary](project-specifications/ProjectExecutiveSummary.pdf)
 
 ### Technologies Used
